@@ -1,0 +1,29 @@
+{
+    "name": "site-de-receitas",
+    "version": "1.0.0",
+    "description": "Esse Ã© o projeto final da mentoria 2.0 do curso do JÃºlio de Lima - Turma 3",
+    "main": "src/server.js",
+    "scripts": {
+        "test": "echo Sem testes automatizados",
+        "start": "node src/server.js",
+        "dev": "node src/server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/isabellahenriques/site-de-receitas.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/isabellahenriques/site-de-receitas/issues"
+    },
+    "homepage": "https://github.com/isabellahenriques/site-de-receitas#readme",
+    "dependencies": {
+        "bcryptjs": "^3.0.3",
+        "express": "^5.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "swagger-ui-express": "^5.0.1"
+    }
+}

@@ -1,0 +1,273 @@
+﻿{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Site de Receitas API",
+    "version": "1.0.0",
+    "description": "API REST para cadastro de usuários, autenticação e gerenciamento de receitas."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    { "name": "Users" },
+    { "name": "Auth" },
+    { "name": "Recipes" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "VALIDATION_ERROR" },
+              "message": { "type": "string", "example": "Mensagem de erro" }
+            }
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "1" },
+          "name": { "type": "string", "example": "Ana Silva" },
+          "email": { "type": "string", "example": "ana@email.com" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+          "expiresIn": { "type": "string", "example": "24h" }
+        }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "Logout realizado com sucesso." }
+        }
+      },
+      "RecipeResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "1" },
+          "title": { "type": "string", "example": "Bolo de Cenoura" },
+          "ingredients": { "type": "string", "example": "3 cenouras, 2 ovos..." },
+          "instructions": { "type": "string", "example": "Misture todos os ingredientes..." },
+          "visibility": { "type": "string", "enum": ["public", "private"], "example": "public" },
+          "author": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "example": "1" },
+              "name": { "type": "string", "example": "Ana Silva" }
+            }
+          }
+        }
+      },
+      "RecipeListItem": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "1" },
+          "title": { "type": "string", "example": "Bolo de Cenoura" },
+          "authorName": { "type": "string", "example": "Ana Silva" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/users": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Cadastrar usuário",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserResponse" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "409": { "description": "E-mail já cadastrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Excluir conta",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Conta excluída" },
+          "401": { "description": "Não autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sem permissão", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Usuário não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login com sucesso", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Credenciais inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Logout com sucesso", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LogoutResponse" } } } },
+          "401": { "description": "Token inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/recipes": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Listar receitas públicas",
+        "parameters": [
+          { "name": "search", "in": "query", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Lista de receitas", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RecipeListItem" } } } } },
+          "400": { "description": "Parâmetro inválido", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "post": {
+        "tags": ["Recipes"],
+        "summary": "Cadastrar receita",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "ingredients", "instructions", "visibility"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "ingredients": { "type": "string" },
+                  "instructions": { "type": "string" },
+                  "visibility": { "type": "string", "enum": ["public", "private"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Receita criada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecipeResponse" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Não autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/recipes/my": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Listar minhas receitas",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de receitas do usuário", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RecipeResponse" } } } } },
+          "401": { "description": "Não autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/api/recipes/{id}": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Detalhar receita",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Detalhes da receita", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecipeResponse" } } } },
+          "401": { "description": "Não autenticado para receita privada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sem permissão para receita privada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Receita não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Recipes"],
+        "summary": "Editar receita",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "ingredients", "instructions", "visibility"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "ingredients": { "type": "string" },
+                  "instructions": { "type": "string" },
+                  "visibility": { "type": "string", "enum": ["public", "private"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Receita atualizada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecipeResponse" } } } },
+          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Não autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sem permissão", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Receita não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Recipes"],
+        "summary": "Excluir receita",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "204": { "description": "Receita excluída" },
+          "401": { "description": "Não autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sem permissão", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Receita não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    }
+  }
+}
