@@ -38,10 +38,16 @@ function deleteUserById(id) {
   return true;
 }
 
+function resetUsers() {
+  users.length = 0;
+  nextUserId = 1;
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
   findUserById,
   comparePassword,
-  deleteUserById
+  deleteUserById,
+  resetUsers
 };
