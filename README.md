@@ -29,7 +29,17 @@ npm run start
 
 Servidor padrão: `http://localhost:3000`
 
+## Branches
+
+| Branch | Descrição |
+|--------|-----------|
+| `main` | Código da API em produção |
+| `testesDeApi` | Testes automatizados e de performance |
+| `testesDePerformance` | Testes de performance |
+
 ## Testes automatizados
+
+**Nota:** Os testes de API estão disponíveis na branch `testesDeApi`.
 
 Os testes de API foram implementados em JavaScript com:
 
@@ -74,6 +84,88 @@ Casos implementados:
 - CT-05: cadastro sem `password`
 - CT-06: cadastro com senha menor que 8 caracteres
 - CT-07: cadastro com body vazio
+
+## Testes de Performance
+
+**Nota:** Os testes de performance estão disponíveis na branch `testesDePerformance`.
+
+Os testes de performance foram implementados com K6 para avaliar a robustez da API sob diferentes cargas.
+
+### Instalação do K6
+
+Para executar os testes de performance, é necessário instalar o K6. Siga as instruções abaixo:
+
+#### Windows (usando Chocolatey ou winget)
+
+```bash
+# Com Chocolatey
+choco install k6
+
+# Ou com winget
+winget install k6
+```
+
+#### Linux
+
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install k6
+
+# Outras distribuições: consulte https://k6.io/docs/get-started/installation/
+```
+
+#### macOS
+
+```bash
+brew install k6
+```
+
+Verifique a instalação:
+
+```bash
+k6 version
+```
+
+### Estrutura de testes de performance
+
+- `tests/performance/users/`: testes específicos para o endpoint de usuários
+  - `load.test.js`: teste de carga
+  - `stress.test.js`: teste de estresse
+  - `spike.test.js`: teste de pico
+- `tests/performance/fixtures/users.json`: dados de exemplo para os testes
+- `tests/performance/reports/`: relatórios de execução em JSON
+
+### Cenários de teste
+
+1. **Teste de Carga (Load Test)**: Simula 50 usuários simultâneos durante 1 minuto. Verifica se a API mantém tempo de resposta abaixo de 2 segundos e taxa de erro menor que 1%.
+
+2. **Teste de Estresse (Stress Test)**: Sobe gradualmente de 0 até 200 usuários em 2 minutos. Identifica o ponto de ruptura da API, registrando taxa de erro e tempo de resposta.
+
+3. **Teste de Pico (Spike Test)**: Simula pico repentino de 500 usuários por 30 segundos. Verifica o comportamento da API sob carga extrema.
+
+### Executar testes de performance
+
+Certifique-se de que a API está rodando em `http://localhost:3000` antes de executar os testes.
+
+```bash
+# Teste de carga
+npm run perf:load
+
+# Teste de estresse
+npm run perf:stress
+
+# Teste de pico
+npm run perf:spike
+```
+
+Os relatórios serão salvos em `tests/performance/reports/` no formato JSON.
+
+### Thresholds (critérios de aceite)
+
+- `http_req_duration`: 95% das requisições abaixo de 2000ms
+- `http_req_failed`: taxa de falha menor que 1%
+- `http_reqs`: registro do total de requisições por segundo
 
 ## Documentação Swagger
 
