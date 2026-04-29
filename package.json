@@ -8,7 +8,10 @@
         "test:report": "mocha \"tests/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=tests/reports/mochawesome,reportFilename=report,quiet=true,overwrite=true,html=true,json=true",
         "test:no-report": "mocha \"tests/**/*.spec.js\" --reporter spec",
         "start": "node src/server.js",
-        "dev": "node src/server.js"
+        "dev": "node src/server.js",
+        "perf:load": "k6 run tests/performance/users/load.test.js --out json=tests/performance/reports/load-report.json",
+"perf:stress": "k6 run tests/performance/users/stress.test.js --out json=tests/performance/reports/stress-report.json",
+"perf:spike": "k6 run tests/performance/users/spike.test.js --out json=tests/performance/reports/spike-report.json"
     },
     "repository": {
         "type": "git",
