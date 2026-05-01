@@ -52,7 +52,7 @@ Os testes de API foram implementados em JavaScript com:
 
 - `tests/api/modules/users`: cenários automatizados do módulo de usuários
 - `tests/api/modules/auth`: cenários automatizados do módulo de autenticação
-- `tests/api/fixtures/users`: massa de dados (request/response) da US-01
+- `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
 - `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
 - `tests/reports/mochawesome`: saída dos relatórios de execução
 
@@ -108,6 +108,17 @@ Casos implementados:
 - CT-13: logout com sucesso com token válido
 - CT-14: logout sem token no header `Authorization`
 - CT-15: logout com token já invalidado por logout anterior
+
+### Cobertura da US-04 (Exclusão de conta)
+
+Endpoint: `DELETE /api/users/:id`
+
+Casos implementados:
+
+- CT-16: exclusão da própria conta com sucesso
+- CT-17: tentativa de excluir conta de outro usuário
+- CT-18: tentativa de excluir conta com id inexistente
+- CT-19: tentativa de excluir conta sem token no header `Authorization`
 
 ## Testes de Performance
 
