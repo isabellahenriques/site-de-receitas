@@ -4,9 +4,11 @@
     "description": "Esse Ã© o projeto final da mentoria 2.0 do curso do JÃºlio de Lima - Turma 3",
     "main": "src/server.js",
     "scripts": {
-        "test": "mocha \"tests/**/*.spec.js\" --reporter spec",
-        "test:report": "mocha \"tests/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=tests/reports/mochawesome,reportFilename=report,quiet=true,overwrite=true,html=true,json=true",
-        "test:no-report": "mocha \"tests/**/*.spec.js\" --reporter spec",
+        "test": "npm run test:api:no-report",
+        "test:api:no-report": "mocha \"tests/api/**/*.spec.js\" --reporter spec",
+        "test:api:report": "mocha \"tests/api/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=tests/reports/mochawesome,reportFilename=report,quiet=true,overwrite=true,html=true,json=true",
+        "test:report": "npm run test:api:report",
+        "test:no-report": "npm run test:api:no-report",
         "start": "node src/server.js",
         "dev": "node src/server.js"
     },

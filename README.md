@@ -75,6 +75,16 @@ npm run test:no-report
 npm run test:report
 ```
 
+```bash
+# Execução apenas da suíte de API sem relatório
+npm run test:api:no-report
+```
+
+```bash
+# Execução apenas da suíte de API com relatório mochawesome
+npm run test:api:report
+```
+
 ### Cobertura da US-01 (Cadastro de usuário)
 
 Endpoint: `POST /api/users`
@@ -157,6 +167,21 @@ Casos implementados:
 - CT-32: tentativa de exclusão com id de receita inexistente
 - CT-33: tentativa de exclusão sem token no header `Authorization`
 - CT-34: validação de que receita excluída não é mais acessível via `GET /api/recipes/:id`
+
+### Cobertura da US-08 (Controle de visibilidade da receita)
+
+Endpoints:
+
+- `GET /api/recipes`
+- `GET /api/recipes/:id`
+- `GET /api/recipes/my`
+
+Casos implementados:
+
+- CT-35: receita privada não aparece na listagem pública
+- CT-36: acesso negado para usuário autenticado que não é dono da receita privada
+- CT-37: acesso negado para visitante não autenticado em receita privada
+- CT-38: listagem de receitas do próprio usuário retorna receitas públicas e privadas
 
 ## Testes de Performance
 

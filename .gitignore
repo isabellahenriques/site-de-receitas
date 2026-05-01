@@ -16,6 +16,8 @@ tests/reports/mochawesome/
 tests/reports/mochawesome/**
 tests/reports/mochawesome/*.html
 tests/reports/mochawesome/*.json
+tests/reports/mochawesome/*.xml
+tests/reports/mochawesome/assets/
 mochawesome-report/
 mochawesome-report/assets/
 mochawesome.json
