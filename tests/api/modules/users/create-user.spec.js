@@ -1,8 +1,8 @@
 const request = require('supertest');
 const { expect } = require('chai');
 
-const app = require('../../../src/app');
-const { resetUsers } = require('../../../src/models/userModel');
+const app = require('../../../../src/app');
+const { resetUsers } = require('../../../../src/models/userModel');
 
 // fixtureRequisicao: origem dos bodies enviados nas requisicoes (entrada da API).
 const fixtureRequisicao = require('../../fixtures/users/create-user-requests.fixture');
