@@ -1,96 +1,106 @@
-// Bibliotecas de teste:
-// - supertest: permite fazer requisições HTTP para a API sem precisar que o servidor esteja rodando separadamente.
-// - chai: fornece funções de validação (assertions) para verificar se o resultado é o esperado.
+// Ferramentas do teste:
+// - supertest: faz chamadas para a API.
+// - chai: confere se o resultado veio como esperado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a aplicação Express para que o supertest possa fazer requisições diretamente nela.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa a função que limpa o banco de dados em memória antes de cada teste.
-// Como o banco é em memória, os dados precisam ser resetados para garantir que
-// um teste não interfira no resultado do outro.
+// Limpa os dados antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 
-// Importa os dados que serão enviados no corpo das requisições (entrada da API).
+// Dados de entrada dos testes.
 const fixtureRequisicao = require('../../fixtures/auth/login-requests.fixture');
 
-// Importa os resultados esperados para validar as respostas da API (saída da API).
+// Resultados esperados para cada caso.
 const fixtureResposta = require('../../fixtures/auth/login-responses.fixture');
 
-// Agrupa todos os testes da US-02 — Login de usuário.
-describe('US-02 - Login de usuario (POST /api/auth/login)', () => {
+function gerarEmailUnico(prefixo) {
+  return `${prefixo}+${Date.now()}-${Math.floor(Math.random() * 100000)}@email.com`;
+}
 
-  // Executado antes de cada teste individual:
-  // 1. Limpa o banco em memória para garantir isolamento entre os cenários.
-  // 2. Cria um usuário válido para que o login possa ser testado.
-  //    Isso é necessário pois o banco é zerado antes de cada teste.
+// Testes da US-02 (login).
+describe('US-02 - Login de usuario (POST /api/auth/login)', () => {
+  let usuarioValido;
+  let loginValido;
+
+  // Preparo de cada caso: limpa tudo e cria um usuário novo.
   beforeEach(async () => {
     resetUsers();
 
+    const emailUnico = gerarEmailUnico('isabella.us02');
+    usuarioValido = {
+      ...fixtureRequisicao.usuarioValido,
+      email: emailUnico
+    };
+    loginValido = {
+      ...fixtureRequisicao.loginValido,
+      email: emailUnico
+    };
+
     await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioValido);
+      .send(usuarioValido);
   });
 
-  // CT-08: Cenário positivo — login com e-mail e senha corretos.
+  // CT-08: login com dados corretos.
   it('CT-08: deve realizar login com sucesso com credenciais validas', async () => {
 
-    // Envia a requisição de login com as credenciais válidas definidas na fixture.
+    // Faz login.
     const response = await request(app)
       .post('/api/auth/login')
-      .send(fixtureRequisicao.loginValido);
+      .send(loginValido);
 
-    // Verifica se o status HTTP retornado é 200 (sucesso).
+    // Confirma sucesso.
     expect(response.status).to.equal(fixtureResposta.sucesso.statusEsperado);
 
-    // Verifica se os campos obrigatórios (token e expiresIn) estão presentes na resposta.
+    // Confirma campos principais da resposta.
     fixtureResposta.sucesso.camposEsperados.forEach((campo) => {
       expect(response.body).to.have.property(campo);
     });
 
-    // Verifica se o token retornado é uma string no formato JWT válido.
-    // Um JWT sempre tem 3 partes separadas por ponto: header.payload.signature.
+    // Token JWT precisa ter 3 partes separadas por ponto.
     expect(response.body.token).to.be.a('string');
     expect(response.body.token.split('.')).to.have.lengthOf(3);
 
-    // Verifica se o tempo de expiração do token está correto conforme documentado no Swagger.
+    // Confirma tempo de expiração.
     expect(response.body.expiresIn).to.equal(fixtureResposta.sucesso.expiresInEsperado);
 
-    // Verifica que campos sensíveis como senha e hash da senha não foram retornados.
+    // Segurança: a API não pode devolver senha.
     fixtureResposta.sucesso.camposNaoPermitidos.forEach((campo) => {
       expect(response.body).to.not.have.property(campo);
     });
   });
 
-  // CT-09 e CT-10: Cenários negativos — credenciais inválidas.
-  // Usando Data-Driven Testing: os dois casos compartilham a mesma lógica de validação,
-  // então são agrupados em um array e executados em loop para evitar repetição de código.
+  // CT-09 e CT-10: login deve falhar com dados errados.
   const casosCredenciaisInvalidas = [
     {
       idCaso: 'CT-09',
       descricao: 'com e-mail não cadastrado',
-      // Body com e-mail que não existe no banco.
+      // E-mail não cadastrado.
       carga: fixtureRequisicao.emailNaoCadastrado
     },
     {
       idCaso: 'CT-10',
       descricao: 'com senha incorreta',
-      // Body com e-mail válido mas senha errada.
+      // Senha errada.
       carga: fixtureRequisicao.senhaIncorreta
     }
   ];
 
   casosCredenciaisInvalidas.forEach(({ idCaso, descricao, carga }) => {
     it(`${idCaso}: deve retornar erro de credenciais invalidas ao realizar login ${descricao}`, async () => {
+      const cargaFinal = idCaso === 'CT-10'
+        ? { ...carga, email: loginValido.email }
+        : carga;
 
-      // Envia a requisição com as credenciais inválidas do caso atual.
+      // Faz a tentativa de login do cenário.
       const response = await request(app)
         .post('/api/auth/login')
-        .send(carga);
+        .send(cargaFinal);
 
-      // Verifica se o status HTTP é 401 (não autorizado) e se o corpo da resposta
-      // contém o código e a mensagem de erro esperados.
+      // Deve retornar "não autorizado" com erro padronizado.
       expect(response.status).to.equal(fixtureResposta.credenciaisInvalidas.statusEsperado);
       expect(response.body).to.deep.equal({
         error: {
@@ -101,33 +111,34 @@ describe('US-02 - Login de usuario (POST /api/auth/login)', () => {
     });
   });
 
-  // CT-11 e CT-12: Cenários negativos — campos obrigatórios ausentes no body.
-  // Também utiliza Data-Driven Testing pelo mesmo motivo dos casos acima.
+  // CT-11 e CT-12: login deve falhar quando faltam campos obrigatórios.
   const casosCampoAusente = [
     {
       idCaso: 'CT-11',
       descricao: 'sem o campo "email"',
-      // Body enviado sem o campo e-mail.
+      // Sem e-mail.
       carga: fixtureRequisicao.emailAusente
     },
     {
       idCaso: 'CT-12',
       descricao: 'sem o campo "password"',
-      // Body enviado sem o campo senha.
+      // Sem senha.
       carga: fixtureRequisicao.senhaAusente
     }
   ];
 
   casosCampoAusente.forEach(({ idCaso, descricao, carga }) => {
     it(`${idCaso}: deve retornar erro ao realizar login ${descricao}`, async () => {
+      const cargaFinal = idCaso === 'CT-12'
+        ? { ...carga, email: loginValido.email }
+        : carga;
 
-      // Envia a requisição com o campo ausente do caso atual.
+      // Faz a chamada do cenário.
       const response = await request(app)
         .post('/api/auth/login')
-        .send(carga);
+        .send(cargaFinal);
 
-      // Verifica se o status HTTP é 400 (requisição inválida) e se o corpo da resposta
-      // contém o código e a mensagem de erro esperados.
+      // Deve retornar erro de validação com o formato esperado.
       expect(response.status).to.equal(fixtureResposta.campoObrigatorioAusente.statusEsperado);
       expect(response.body).to.deep.equal({
         error: {

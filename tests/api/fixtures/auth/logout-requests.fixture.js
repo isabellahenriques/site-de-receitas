@@ -1,5 +1,5 @@
-// Este arquivo contém os dados usados nas requisições dos testes da US-03 (Logout de usuário).
-// Centralizar os dados de entrada aqui facilita manutenção e entendimento dos cenários.
+// Fixture de entrada da US-03.
+// Aqui ficam os dados enviados nos testes de logout.
 
 module.exports = {
 

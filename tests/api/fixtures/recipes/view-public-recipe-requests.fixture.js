@@ -1,5 +1,5 @@
-// Este arquivo centraliza as massas de dados de entrada da US-11 (Visualizacao de receita publica).
-// Mantemos os dados fora do spec para facilitar Data-Driven Testing e manutencao.
+// Fixture de entrada da US-11.
+// Aqui ficam os dados enviados nos testes de visualização de receita.
 
 module.exports = {
   // Usuario dono da receita usada nos cenarios de visualizacao.

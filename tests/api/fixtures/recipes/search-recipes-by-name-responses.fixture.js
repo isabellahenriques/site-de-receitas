@@ -1,5 +1,5 @@
-// Este arquivo centraliza as respostas esperadas da US-10.
-// Cada entrada descreve o comportamento esperado para cada cenario de busca.
+// Fixture de saída da US-10.
+// Aqui ficam os resultados esperados dos cenários de busca.
 
 module.exports = {
   // Resultado esperado para os cenarios de sucesso da busca por nome.

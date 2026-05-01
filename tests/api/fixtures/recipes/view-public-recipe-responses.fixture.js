@@ -1,5 +1,5 @@
-// Este arquivo descreve as respostas esperadas para os cenarios da US-11.
-// Cada objeto representa uma regra de negocio validada no endpoint GET /api/recipes/:id.
+// Fixture de saída da US-11.
+// Aqui ficam os resultados esperados dos cenários de visualização.
 
 module.exports = {
   // Campos obrigatorios do detalhamento conforme schema RecipeResponse do Swagger.

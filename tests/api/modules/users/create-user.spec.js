@@ -1,73 +1,81 @@
-// Bibliotecas de teste:
-// - supertest: permite fazer requisições HTTP para a API sem precisar que o servidor esteja rodando separadamente.
-// - chai: fornece funções de validação (assertions) para verificar se o resultado é o esperado.
+// Ferramentas do teste:
+// - supertest: chama a API.
+// - chai: verifica o resultado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a aplicação Express para que o supertest possa fazer requisições diretamente nela.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa a função que limpa o banco de dados em memória antes de cada teste.
-// Como o banco é em memória, os dados precisam ser resetados para garantir que
-// um teste não interfira no resultado do outro.
+// Limpa os dados antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 
-// Importa os dados que serão enviados no corpo das requisições (entrada da API).
+// Dados de entrada dos testes.
 const fixtureRequisicao = require('../../fixtures/users/create-user-requests.fixture');
 
-// Importa os resultados esperados para validar as respostas da API (saída da API).
+// Resultados esperados em cada caso.
 const fixtureResposta = require('../../fixtures/users/create-user-responses.fixture');
 
-// Agrupa todos os testes da US-01 — Cadastro de usuário.
+function gerarEmailUnico(prefixo) {
+  return `${prefixo}+${Date.now()}-${Math.floor(Math.random() * 100000)}@email.com`;
+}
+
+// Testes da US-01 (cadastro de usuário).
 describe('US-01 - Cadastro de usuario (POST /api/users)', () => {
 
-  // Executado antes de cada teste individual para limpar o banco em memória.
-  // Isso garante que os dados de um teste não influenciem o próximo.
+  // Cada caso começa com dados limpos.
   beforeEach(() => {
     resetUsers();
   });
 
-  // CT-01: Cenário positivo — cadastro com todos os campos preenchidos corretamente.
+  // CT-01: cadastro com dados corretos.
   it('CT-01: deve cadastrar usuario com sucesso com todos os campos validos', async () => {
+    const usuarioValido = {
+      ...fixtureRequisicao.usuarioValido,
+      email: gerarEmailUnico('isabella.us01')
+    };
 
-    // Envia a requisição de cadastro com os dados válidos definidos na fixture.
+    // Faz o cadastro.
     const response = await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioValido);
+      .send(usuarioValido);
 
-    // Verifica se o status HTTP retornado é 201 (criado com sucesso).
+    // Deve retornar sucesso de criação.
     expect(response.status).to.equal(fixtureResposta.sucesso.statusEsperado);
 
-    // Verifica se os campos obrigatórios (id, name, email) estão presentes na resposta.
+    // Confirma os campos principais.
     fixtureResposta.sucesso.camposEsperados.forEach((campo) => {
       expect(response.body).to.have.property(campo);
     });
 
-    // Verifica se os dados retornados correspondem ao que foi enviado na requisição.
-    expect(response.body.name).to.equal(fixtureRequisicao.usuarioValido.name);
-    expect(response.body.email).to.equal(fixtureRequisicao.usuarioValido.email);
+    // Confirma se voltou o mesmo nome e e-mail enviados.
+    expect(response.body.name).to.equal(usuarioValido.name);
+    expect(response.body.email).to.equal(usuarioValido.email);
 
-    // Verifica que campos sensíveis como senha e hash da senha não foram retornados.
+    // Segurança: a API não pode devolver senha.
     fixtureResposta.sucesso.camposNaoPermitidos.forEach((campo) => {
       expect(response.body).to.not.have.property(campo);
     });
   });
 
-  // CT-02: Cenário negativo — tentativa de cadastro com um e-mail já existente no banco.
+  // CT-02: não pode cadastrar duas contas com o mesmo e-mail.
   it('CT-02: deve retornar erro ao cadastrar com e-mail ja existente', async () => {
+    const usuarioValido = {
+      ...fixtureRequisicao.usuarioValido,
+      email: gerarEmailUnico('isabella.us01')
+    };
 
-    // Primeiro cadastro — cria o usuário no banco.
+    // Primeiro cadastro.
     await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioValido);
+      .send(usuarioValido);
 
-    // Segundo cadastro com o mesmo e-mail — deve ser rejeitado pela API.
+    // Segundo cadastro com o mesmo e-mail.
     const response = await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioValido);
+      .send(usuarioValido);
 
-    // Verifica se o status HTTP é 409 (conflito) e se o corpo da resposta
-    // contém o código e a mensagem de erro esperados.
+    // Deve retornar conflito com erro padronizado.
     expect(response.status).to.equal(fixtureResposta.emailDuplicado.statusEsperado);
     expect(response.body).to.deep.equal({
       error: {
@@ -77,26 +85,24 @@ describe('US-01 - Cadastro de usuario (POST /api/users)', () => {
     });
   });
 
-  // CT-03, CT-04 e CT-05: Cenários negativos — campos obrigatórios ausentes no body.
-  // Usando Data-Driven Testing: os três casos compartilham a mesma lógica de validação,
-  // então são agrupados em um array e executados em loop para evitar repetição de código.
+  // CT-03, CT-04 e CT-05: cadastro deve falhar quando falta campo obrigatório.
   const casosCampoAusente = [
     {
       idCaso: 'CT-03',
       descricao: 'sem o campo "name"',
-      // Body enviado sem o campo nome.
+      // Sem nome.
       carga: fixtureRequisicao.nomeAusente
     },
     {
       idCaso: 'CT-04',
       descricao: 'sem o campo "email"',
-      // Body enviado sem o campo e-mail.
+      // Sem e-mail.
       carga: fixtureRequisicao.emailAusente
     },
     {
       idCaso: 'CT-05',
       descricao: 'sem o campo "password"',
-      // Body enviado sem o campo senha.
+      // Sem senha.
       carga: fixtureRequisicao.senhaAusente
     }
   ];
@@ -104,13 +110,12 @@ describe('US-01 - Cadastro de usuario (POST /api/users)', () => {
   casosCampoAusente.forEach(({ idCaso, descricao, carga }) => {
     it(`${idCaso}: deve retornar erro ao cadastrar ${descricao}`, async () => {
 
-      // Envia a requisição com o campo ausente do caso atual.
+      // Faz a chamada do cenário.
       const response = await request(app)
         .post('/api/users')
         .send(carga);
 
-      // Verifica se o status HTTP é 400 (requisição inválida) e se o corpo da resposta
-      // contém o código e a mensagem de erro esperados.
+      // Deve retornar erro de validação.
       expect(response.status).to.equal(fixtureResposta.campoObrigatorioAusente.statusEsperado);
       expect(response.body).to.deep.equal({
         error: {
@@ -121,16 +126,15 @@ describe('US-01 - Cadastro de usuario (POST /api/users)', () => {
     });
   });
 
-  // CT-06: Cenário negativo — senha com menos de 8 caracteres.
+  // CT-06: senha curta deve falhar.
   it('CT-06: deve retornar erro ao cadastrar com senha menor que 8 caracteres', async () => {
 
-    // Envia a requisição com uma senha de apenas 3 caracteres.
+    // Faz cadastro com senha curta.
     const response = await request(app)
       .post('/api/users')
       .send(fixtureRequisicao.senhaCurta);
 
-    // Verifica se o status HTTP é 400 e se o corpo da resposta contém
-    // o código e a mensagem de erro esperados para senha inválida.
+    // Deve retornar erro de validação.
     expect(response.status).to.equal(fixtureResposta.senhaCurta.statusEsperado);
     expect(response.body).to.deep.equal({
       error: {
@@ -140,16 +144,15 @@ describe('US-01 - Cadastro de usuario (POST /api/users)', () => {
     });
   });
 
-  // CT-07: Cenário negativo — body completamente vazio enviado na requisição.
+  // CT-07: sem dados no corpo da requisição.
   it('CT-07: deve retornar erro ao cadastrar com body vazio', async () => {
 
-    // Envia a requisição sem nenhum dado no corpo.
+    // Faz cadastro com body vazio.
     const response = await request(app)
       .post('/api/users')
       .send(fixtureRequisicao.corpoVazio);
 
-    // Verifica se o status HTTP é 400 e se o corpo da resposta contém
-    // o código e a mensagem de erro esperados para body vazio.
+    // Deve retornar erro de validação.
     expect(response.status).to.equal(fixtureResposta.corpoVazio.statusEsperado);
     expect(response.body).to.deep.equal({
       error: {

@@ -1,5 +1,5 @@
-// Este arquivo descreve os resultados esperados para os cenarios da US-07 (Exclusao de receita).
-// Cada bloco representa um comportamento da API para facilitar leitura e manutencao.
+// Fixture de saída da US-07.
+// Aqui ficam os resultados esperados dos cenários de exclusão.
 
 module.exports = {
   // Resultado esperado do CT-30.

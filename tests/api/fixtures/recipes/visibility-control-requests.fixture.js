@@ -1,5 +1,5 @@
-// Este arquivo centraliza os dados de entrada dos testes da US-08 (Controle de visibilidade da receita).
-// As massas ficam separadas da logica dos testes para facilitar manutencao e reaproveitamento.
+// Fixture de entrada da US-08.
+// Aqui ficam os dados enviados nos testes de visibilidade.
 
 module.exports = {
   // Dados do usuario A, usado para tentar acessar receita privada de outro usuario (CT-36).

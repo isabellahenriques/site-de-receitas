@@ -4,21 +4,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Arquivos de relatorio de testes (mochawesome)
+# Arquivos de relatorio de testes
 tests/reports/
-tests/reports/**/*.html
-tests/reports/**/*.json
-tests/reports/mochawesome/
-tests/reports/mochawesome/**
-tests/reports/mochawesome/*.html
-tests/reports/mochawesome/*.json
-tests/reports/mochawesome/*.xml
-tests/reports/mochawesome/*.js
-tests/reports/mochawesome/*.css
-tests/reports/mochawesome/assets/
 mochawesome-report/
-mochawesome-report/assets/
-mochawesome.json
 mochawesome*.html
 mochawesome*.json
 

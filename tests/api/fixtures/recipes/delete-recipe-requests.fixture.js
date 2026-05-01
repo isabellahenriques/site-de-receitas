@@ -1,5 +1,5 @@
-// Este arquivo concentra os dados de entrada usados nos testes da US-07 (Exclusao de receita).
-// A estrategia de fixture facilita manutencao e permite Data-Driven Testing com dados desacoplados da logica.
+// Fixture de entrada da US-07.
+// Aqui ficam os dados enviados nos testes de exclusão de receita.
 
 module.exports = {
   // Dados validos do usuario A, dono da receita principal usada nos cenarios de exclusao.

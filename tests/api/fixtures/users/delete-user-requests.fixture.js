@@ -1,5 +1,5 @@
-// Este arquivo contém os dados de entrada usados nos testes da US-04 (Exclusão de conta).
-// A ideia é manter todas as massas de requisição em um único lugar para facilitar manutenção.
+// Fixture de entrada da US-04.
+// Aqui ficam os dados enviados nas requisições de exclusão de conta.
 
 module.exports = {
 

@@ -1,5 +1,5 @@
-// Este arquivo descreve as respostas esperadas para os cenarios da US-08.
-// Cada objeto representa uma regra de negocio validada pelos testes de visibilidade.
+// Fixture de saída da US-08.
+// Aqui ficam os resultados esperados para cada cenário de visibilidade.
 
 module.exports = {
   // Resultado esperado do CT-35: listagem publica deve retornar 200.

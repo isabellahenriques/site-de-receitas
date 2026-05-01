@@ -1,5 +1,5 @@
-// Este arquivo concentra as massas de dados de entrada da US-09.
-// As massas ficam externas ao spec para facilitar manutencao e Data-Driven Testing.
+// Fixture de entrada da US-09.
+// Aqui ficam os dados enviados nos testes de listagem pública.
 
 module.exports = {
   // Usuario autor da receita publica usada para validar retorno da listagem.

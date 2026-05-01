@@ -1,6 +1,5 @@
-// Este arquivo contém os resultados esperados para cada cenário da US-05 (Cadastro de receita).
-// Cada bloco representa o que a API deve devolver em termos de status HTTP e conteúdo de resposta.
-// Centralizar essas expectativas facilita ajustes futuros sem duplicar valores nos testes.
+// Fixture de saída da US-05.
+// Aqui ficam os resultados esperados para cada cenário.
 
 module.exports = {
 

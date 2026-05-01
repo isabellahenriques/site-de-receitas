@@ -1,37 +1,33 @@
-// Bibliotecas de teste:
-// - supertest: executa requisicoes HTTP diretamente na aplicacao Express.
-// - chai: fornece assercoes para validar status, estrutura e regras de negocio.
+// Ferramentas do teste:
+// - supertest: chama a API.
+// - chai: verifica o resultado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a aplicacao Express para teste integrado dos endpoints.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa resets para garantir isolamento total entre cenarios.
+// Limpa dados antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 const { resetRecipes } = require('../../../../src/models/recipeModel');
 
-// Importa fixtures de entrada (request) e de saida esperada (response) da US-10.
+// Dados de entrada e resultados esperados.
 const fixtureRequisicao = require('../../fixtures/recipes/search-recipes-by-name-requests.fixture');
 const fixtureResposta = require('../../fixtures/recipes/search-recipes-by-name-responses.fixture');
 
-// Agrupa os cenarios da US-10 — Busca de receitas por nome.
+// Testes da US-10 (busca por nome).
 describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', () => {
   let idReceitaPublica;
   let idReceitaPrivada;
   let tituloReceitaPublica;
   let tituloReceitaPrivada;
 
-  // beforeEach:
-  // 1. Reseta usuarios e receitas em memoria para garantir independencia dos testes.
-  // 2. Cria os autores das receitas (publica e privada) e obtem os tokens.
-  // 3. Cria a receita publica "Bolo de cenoura" para os cenarios de busca positiva.
-  // 4. Cria a receita privada "Receita secreta" para validar que nao aparece na busca publica.
+  // Preparo: cria usuários, faz login e cria receitas pública e privada.
   beforeEach(async () => {
     resetUsers();
     resetRecipes();
 
-    // Gera sufixo unico para evitar colisao de e-mail entre execucoes da suite.
+    // E-mails únicos evitam mistura entre testes.
     const sufixoUnico = Date.now();
 
     const usuarioAutorPublicaComEmailUnico = {
@@ -52,7 +48,7 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
       email: usuarioAutorPrivadaComEmailUnico.email
     };
 
-    // Cria usuarios autores para montar base de dados do cenario.
+    // Cria os dois usuários.
     await request(app)
       .post('/api/users')
       .send(usuarioAutorPublicaComEmailUnico);
@@ -61,7 +57,7 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
       .post('/api/users')
       .send(usuarioAutorPrivadaComEmailUnico);
 
-    // Realiza login para obter token dos autores e criar receitas.
+    // Faz login para obter tokens.
     const respostaLoginAutorPublica = await request(app)
       .post('/api/auth/login')
       .send(loginAutorPublicaComEmailUnico);
@@ -72,13 +68,13 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
       .send(loginAutorPrivadaComEmailUnico);
     const tokenAutorPrivada = respostaLoginAutorPrivada.body.token;
 
-    // Cria receita publica com titulo deterministico para os asserts dos casos CT-42 e CT-43.
+    // Cria receita pública para os cenários de busca.
     const respostaReceitaPublica = await request(app)
       .post('/api/recipes')
       .set('Authorization', `Bearer ${tokenAutorPublica}`)
       .send(fixtureRequisicao.receitaPublicaBase);
 
-    // Cria receita privada para validar que nunca aparece na busca publica (CT-45).
+    // Cria receita privada para validar ocultação.
     const respostaReceitaPrivada = await request(app)
       .post('/api/recipes')
       .set('Authorization', `Bearer ${tokenAutorPrivada}`)
@@ -90,9 +86,7 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
     tituloReceitaPrivada = respostaReceitaPrivada.body.title;
   });
 
-  // CT-42, CT-43, CT-44 e CT-45:
-  // Data-Driven Testing aplicado porque todos os cenarios usam o mesmo endpoint
-  // e variam apenas o termo de busca e a expectativa de retorno.
+  // CT-42, CT-43, CT-44 e CT-45: cenários da busca.
   const cenariosBuscaPorNome = [
     {
       idCaso: 'CT-42',
@@ -116,32 +110,32 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
     it(`${cenario.idCaso}: deve retornar 200 em ${cenario.descricao}`, async () => {
       const termoBusca = fixtureRequisicao.termosBusca[cenario.termoBusca];
 
-      // Executa a busca publica por nome conforme termo definido no cenario.
+      // Faz a busca com o termo do cenário.
       const response = await request(app)
         .get('/api/recipes')
         .query({ search: termoBusca });
 
-      // Valida status de sucesso conforme contrato do Swagger para GET /api/recipes.
+      // Confirma sucesso.
       expect(response.status).to.equal(fixtureResposta.buscaComSucesso.statusEsperado);
       expect(response.body).to.be.an('array');
 
-      // Verifica os campos minimos de cada item retornado na listagem.
+      // Cada item precisa ter os campos mínimos.
       response.body.forEach((receita) => {
         fixtureResposta.camposObrigatoriosItemListagem.forEach((campoObrigatorio) => {
           expect(receita).to.have.property(campoObrigatorio);
         });
 
-        // Garante que o retorno de listagem nao expoe campos de detalhe da receita.
+        // Não deve expor detalhes extras.
         expect(receita).to.not.have.property('visibility');
         expect(receita).to.not.have.property('ingredients');
         expect(receita).to.not.have.property('instructions');
         expect(receita).to.not.have.property('author');
       });
 
-      // Busca a receita publica criada no setup para validar cenarios de retorno positivo.
+      // Procura a receita pública criada no preparo.
       const receitaPublicaRetornada = response.body.find((receita) => receita.id === idReceitaPublica);
 
-      // Valida regra de negocio de retorno da receita publica para CT-42 e CT-43.
+      // Nos cenários positivos, receita pública deve aparecer.
       if (cenario.deveConterReceitaPublica) {
         expect(receitaPublicaRetornada).to.exist;
         expect(receitaPublicaRetornada.title).to.equal(tituloReceitaPublica);
@@ -149,7 +143,7 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
         expect(receitaPublicaRetornada).to.not.exist;
       }
 
-      // Valida que a receita privada nunca aparece no endpoint publico (incluindo CT-45).
+      // Receita privada nunca pode aparecer.
       if (cenario.deveOcultarReceitaPrivada) {
         const idsRetornados = response.body.map((receita) => receita.id);
         const titulosRetornados = response.body.map((receita) => receita.title);
@@ -157,7 +151,7 @@ describe('US-10 - Busca de receitas por nome (GET /api/recipes?search=termo)', (
         expect(titulosRetornados).to.not.include(tituloReceitaPrivada);
       }
 
-      // Valida retorno vazio para cenarios sem resultado de busca (CT-44 e CT-45).
+      // Nos cenários sem resultado, a lista deve vir vazia.
       if (cenario.deveRetornarListaVazia) {
         expect(response.body).to.be.an('array').that.is.empty;
       }

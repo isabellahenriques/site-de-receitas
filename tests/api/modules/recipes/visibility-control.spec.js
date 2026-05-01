@@ -1,37 +1,33 @@
-// Bibliotecas de teste:
-// - supertest: executa requisicoes HTTP diretamente na aplicacao Express.
-// - chai: fornece assercoes para validar comportamento da API.
+// Ferramentas do teste:
+// - supertest: chama a API.
+// - chai: verifica o resultado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a aplicacao para execucao integrada dos testes.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa resets para garantir isolamento entre cenarios.
+// Limpa dados antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 const { resetRecipes } = require('../../../../src/models/recipeModel');
 
-// Importa fixtures de entrada (request) e de saida esperada (response) da US-08.
+// Dados de entrada e resultados esperados.
 const fixtureRequisicao = require('../../fixtures/recipes/visibility-control-requests.fixture');
 const fixtureResposta = require('../../fixtures/recipes/visibility-control-responses.fixture');
 
-// Agrupa os cenarios da US-08 — Controle de visibilidade da receita.
+// Testes da US-08 (visibilidade da receita).
 describe('US-08 - Controle de visibilidade da receita (GET /api/recipes, /api/recipes/:id e /api/recipes/my)', () => {
   let tokenUsuarioA;
   let tokenUsuarioB;
   let receitaPrivadaUsuarioBId;
   let receitaPublicaUsuarioBId;
 
-  // beforeEach:
-  // 1. Reseta usuarios e receitas em memoria.
-  // 2. Cria usuario A e usuario B.
-  // 3. Faz login de ambos para obter tokens.
-  // 4. Cria no usuario B uma receita privada e uma publica para validar as regras da US-08.
+  // Preparo: cria usuários, faz login e cria receitas pública e privada.
   beforeEach(async () => {
     resetUsers();
     resetRecipes();
 
-    // Gera e-mails unicos para evitar conflito com execucoes paralelas da suite.
+    // E-mails únicos evitam mistura entre testes.
     const sufixoUnico = Date.now();
     const usuarioAComEmailUnico = {
       ...fixtureRequisicao.usuarioAValido,
@@ -81,24 +77,22 @@ describe('US-08 - Controle de visibilidade da receita (GET /api/recipes, /api/re
     receitaPublicaUsuarioBId = respostaReceitaPublica.body.id;
   });
 
-  // CT-35: receita privada nao deve aparecer em listagem publica.
+  // CT-35: receita privada não deve aparecer na listagem pública.
   it('CT-35: deve retornar 200 e ocultar receitas privadas na listagem publica', async () => {
-    // Executa endpoint publico de listagem sem autenticacao.
+    // Faz a listagem pública.
     const response = await request(app).get('/api/recipes');
 
-    // Valida status de sucesso da listagem publica.
+    // Confirma sucesso.
     expect(response.status).to.equal(fixtureResposta.listagemPublica.statusEsperado);
     expect(response.body).to.be.an('array');
 
-    // Confirma que a receita privada do usuario B nao aparece no retorno publico.
+    // Confirma que só aparece a receita pública.
     const idsRetornados = response.body.map((receita) => receita.id);
     expect(idsRetornados).to.include(receitaPublicaUsuarioBId);
     expect(idsRetornados).to.not.include(receitaPrivadaUsuarioBId);
   });
 
-  // CT-36 e CT-37: cenarios de acesso ao detalhe da receita privada.
-  // Data-Driven aplicado porque os casos compartilham fluxo base (GET /api/recipes/:id),
-  // mudando apenas autenticacao e expectativa de erro.
+  // CT-36 e CT-37: acesso indevido à receita privada.
   const casosErroAcessoReceitaPrivada = [
     {
       idCaso: 'CT-36',
@@ -119,14 +113,14 @@ describe('US-08 - Controle de visibilidade da receita (GET /api/recipes, /api/re
 
   casosErroAcessoReceitaPrivada.forEach(({ idCaso, descricao, montarRequisicao, respostaEsperada }) => {
     it(`${idCaso}: deve retornar erro ao acessar receita privada ${descricao}`, async () => {
-      // Executa o cenario com variacao de autenticacao definida no fixture.
+      // Executa a variação do cenário.
       const response = await montarRequisicao({
         idReceitaPrivada: receitaPrivadaUsuarioBId,
         tokenA: tokenUsuarioA,
         tokenB: tokenUsuarioB
       });
 
-      // Valida status HTTP e payload padrao de erro esperado.
+      // Confirma status e erro esperados.
       expect(response.status).to.equal(respostaEsperada.statusEsperado);
       expect(response.body).to.deep.equal({
         error: {
@@ -137,23 +131,23 @@ describe('US-08 - Controle de visibilidade da receita (GET /api/recipes, /api/re
     });
   });
 
-  // CT-38: endpoint de "minhas receitas" deve trazer publicas e privadas do proprio usuario.
+  // CT-38: "minhas receitas" deve mostrar públicas e privadas do dono.
   it('CT-38: deve retornar 200 e listar receitas publicas e privadas do proprio usuario', async () => {
-    // Executa listagem autenticada de receitas do usuario B (dono das receitas criadas no setup).
+    // Faz a listagem do usuário dono.
     const response = await request(app)
       .get('/api/recipes/my')
       .set('Authorization', `Bearer ${tokenUsuarioB}`);
 
-    // Valida retorno de sucesso e formato esperado em array.
+    // Confirma sucesso e formato em lista.
     expect(response.status).to.equal(fixtureResposta.listagemMinhasReceitas.statusEsperado);
     expect(response.body).to.be.an('array');
 
-    // Verifica que ambas as receitas do usuario (publica e privada) foram retornadas.
+    // Confirma que vieram as duas receitas.
     const idsRetornados = response.body.map((receita) => receita.id);
     expect(idsRetornados).to.include(receitaPublicaUsuarioBId);
     expect(idsRetornados).to.include(receitaPrivadaUsuarioBId);
 
-    // Verifica explicitamente os tipos de visibilidade presentes na listagem.
+    // Confirma os tipos de visibilidade.
     const visibilidadesRetornadas = response.body.map((receita) => receita.visibility);
     expect(visibilidadesRetornadas).to.include('public');
     expect(visibilidadesRetornadas).to.include('private');

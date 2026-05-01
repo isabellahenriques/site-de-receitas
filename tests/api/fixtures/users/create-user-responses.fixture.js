@@ -1,6 +1,5 @@
-// Este arquivo contém os resultados esperados para cada cenário da US-01 (Cadastro de usuário).
-// Cada propriedade representa um grupo de validações que o teste irá verificar na resposta da API.
-// Centralizar aqui garante que qualquer mudança no contrato da API seja feita em um único lugar.
+// Fixture de saída da US-01.
+// Aqui ficam os resultados esperados de cada cenário.
 
 module.exports = {
 

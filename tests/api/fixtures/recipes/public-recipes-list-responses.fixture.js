@@ -1,5 +1,5 @@
-// Este arquivo centraliza os resultados esperados da US-09.
-// Cada cenario referencia estas expectativas para manter o teste legivel.
+// Fixture de saída da US-09.
+// Aqui ficam os resultados esperados dos cenários de listagem pública.
 
 module.exports = {
   // Resultado esperado de sucesso para os cenarios CT-39, CT-40 e CT-41.

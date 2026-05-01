@@ -1,5 +1,5 @@
-// Este arquivo centraliza as massas de dados de entrada da US-10 (Busca de receitas por nome).
-// Mantemos os dados fora do spec para facilitar Data-Driven Testing e manutencao.
+// Fixture de entrada da US-10.
+// Aqui ficam os dados enviados nos testes de busca por nome.
 
 module.exports = {
   // Usuario autor da receita publica que deve aparecer no resultado da busca.

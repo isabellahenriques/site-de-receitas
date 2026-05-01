@@ -39,7 +39,7 @@ Servidor padrão: `http://localhost:3000`
 
 ## Testes automatizados
 
-**Nota:** Os testes de API estão disponíveis na branch `testesDeApi`.
+**Nota:** Nesta branch, a estrutura de testes disponível no repositório é a de API em `tests/api`.
 
 Os testes de API foram implementados em JavaScript com:
 
@@ -56,7 +56,7 @@ Os testes de API foram implementados em JavaScript com:
 - `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
 - `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
 - `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05, US-06, US-07, US-08, US-09, US-10 e US-11
-- `tests/reports/mochawesome`: saída dos relatórios de execução
+- `tests/reports`: saída dos relatórios de execução
 
 ### Executar testes
 
@@ -208,7 +208,7 @@ Casos implementados:
 - CT-44: busca com termo inexistente retorna 200 com lista vazia
 - CT-45: busca por termo de receita privada retorna 200 sem expor receita privada
 
-### Cobertura da US-11 (Visualizacao de receita publica)
+### Cobertura da US-11 (Visualização de receita pública)
 
 Endpoint:
 
@@ -216,14 +216,14 @@ Endpoint:
 
 Casos implementados:
 
-- CT-46: visualizacao de receita publica com sucesso retornando detalhes completos da receita
-- CT-47: visualizacao com id inexistente retorna 404 com mensagem de receita nao encontrada
-- CT-48: visualizacao de receita publica sem autenticacao retorna 200 com detalhes completos
-- CT-49: visualizacao de receita privada pelo proprio dono retorna 200 com detalhes completos
+- CT-46: visualização de receita pública com sucesso retornando detalhes completos da receita
+- CT-47: visualização com id inexistente retorna 404 com mensagem de receita não encontrada
+- CT-48: visualização de receita pública sem autenticação retorna 200 com detalhes completos
+- CT-49: visualização de receita privada pelo próprio dono retorna 200 com detalhes completos
 
 ## Testes de Performance
 
-**Nota:** Os testes de performance estão disponíveis na branch `testesDePerformance`.
+**Nota:** Os testes de performance estão disponíveis na branch `testesDePerformance` e podem não estar presentes no diretório `tests` desta branch.
 
 Os testes de performance foram implementados com K6 para avaliar a robustez da API sob diferentes cargas.
 

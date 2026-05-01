@@ -1,7 +1,5 @@
-// Este arquivo contém os dados que serão enviados no corpo das requisições
-// dos testes da US-02 (Login de usuário).
-// Centralizar os dados aqui facilita a manutenção: se um valor mudar,
-// basta alterar neste arquivo e todos os testes serão atualizados.
+// Fixture de entrada da US-02.
+// Aqui ficam exemplos do que enviamos para a API nos testes de login.
 
 module.exports = {
 

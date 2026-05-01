@@ -1,5 +1,5 @@
-// Este arquivo contém os dados de entrada usados nos testes da US-06 (Edição de receita).
-// A ideia é manter todas as massas de requisição em um único lugar para facilitar manutenção.
+// Fixture de entrada da US-06.
+// Aqui ficam os dados enviados nos testes de edição de receita.
 
 module.exports = {
 

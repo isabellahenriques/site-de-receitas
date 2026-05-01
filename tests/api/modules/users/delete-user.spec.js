@@ -1,70 +1,87 @@
-// Bibliotecas de teste:
-// - supertest: permite fazer requisições HTTP para a API sem depender de ferramentas externas.
-// - chai: fornece validações para garantir que o comportamento retornado é o esperado.
+// Ferramentas do teste:
+// - supertest: chama a API.
+// - chai: verifica o resultado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a aplicação Express para o supertest enviar requisições diretamente para os endpoints.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa funções de reset dos bancos em memória para garantir isolamento entre os testes.
-// Como os dados ficam em arrays na memória, cada cenário deve começar com ambiente limpo.
+// Limpa dados de usuários e receitas antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 const { resetRecipes } = require('../../../../src/models/recipeModel');
 
-// Importa os dados de entrada (massa de requisição) da US-04.
+// Dados de entrada dos testes.
 const fixtureRequisicao = require('../../fixtures/users/delete-user-requests.fixture');
 
-// Importa os dados esperados de saída (status e mensagens) da US-04.
+// Resultados esperados em cada caso.
 const fixtureResposta = require('../../fixtures/users/delete-user-responses.fixture');
 
-// Agrupa todos os testes da US-04 — Exclusão de conta.
+function gerarEmailUnico(prefixo) {
+  return `${prefixo}+${Date.now()}-${Math.floor(Math.random() * 100000)}@email.com`;
+}
+
+// Testes da US-04 (exclusão de conta).
 describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
   let usuarioAId;
   let usuarioBId;
   let tokenUsuarioA;
   let tokenUsuarioB;
+  let loginUsuarioAValido;
+  let loginUsuarioBValido;
 
-  // beforeEach:
-  // 1. Limpa o banco de usuários (resetUsers) e também dados de receita em memória.
-  // 2. Cria o usuário A via POST /api/users.
-  // 3. Faz login do usuário A via POST /api/auth/login e guarda o token.
-  // 4. Cria o usuário B via POST /api/users com e-mail diferente.
-  // 5. Faz login do usuário B via POST /api/auth/login e guarda o token.
-  // Esse preparo cria um cenário previsível para todos os casos, sem dependência entre testes.
+  // Preparo de cada caso: cria dois usuários e faz login nos dois.
   beforeEach(async () => {
     resetUsers();
     resetRecipes();
 
+    const emailUsuarioA = gerarEmailUnico('usuario.a.us04');
+    const emailUsuarioB = gerarEmailUnico('usuario.b.us04');
+    const usuarioAValido = {
+      ...fixtureRequisicao.usuarioAValido,
+      email: emailUsuarioA
+    };
+    loginUsuarioAValido = {
+      ...fixtureRequisicao.loginUsuarioAValido,
+      email: emailUsuarioA
+    };
+    const usuarioBValido = {
+      ...fixtureRequisicao.usuarioBValido,
+      email: emailUsuarioB
+    };
+    loginUsuarioBValido = {
+      ...fixtureRequisicao.loginUsuarioBValido,
+      email: emailUsuarioB
+    };
+
     const respostaCriacaoUsuarioA = await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioAValido);
+      .send(usuarioAValido);
 
     usuarioAId = respostaCriacaoUsuarioA.body.id;
 
     const respostaLoginUsuarioA = await request(app)
       .post('/api/auth/login')
-      .send(fixtureRequisicao.loginUsuarioAValido);
+      .send(loginUsuarioAValido);
 
     tokenUsuarioA = respostaLoginUsuarioA.body.token;
 
     const respostaCriacaoUsuarioB = await request(app)
       .post('/api/users')
-      .send(fixtureRequisicao.usuarioBValido);
+      .send(usuarioBValido);
 
     usuarioBId = respostaCriacaoUsuarioB.body.id;
 
     const respostaLoginUsuarioB = await request(app)
       .post('/api/auth/login')
-      .send(fixtureRequisicao.loginUsuarioBValido);
+      .send(loginUsuarioBValido);
 
     tokenUsuarioB = respostaLoginUsuarioB.body.token;
   });
 
-  // CT-16: Cenário positivo — exclusão da própria conta com token válido.
+  // CT-16: usuário consegue excluir a própria conta.
   it('CT-16: deve excluir a propria conta com sucesso e remover receitas associadas', async () => {
-    // Cria uma receita pública para o usuário A antes da exclusão da conta.
-    // Isso permite validar a regra de negócio de remoção das receitas associadas.
+    // Cria uma receita para confirmar que ela também será removida.
     const respostaCriacaoReceita = await request(app)
       .post('/api/recipes')
       .set('Authorization', `Bearer ${tokenUsuarioA}`)
@@ -72,19 +89,18 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
 
     const receitaCriadaId = respostaCriacaoReceita.body.id;
 
-    // Executa a exclusão da conta do próprio usuário autenticado.
+    // Exclui a própria conta.
     const respostaExclusao = await request(app)
       .delete(`/api/users/${usuarioAId}`)
       .set('Authorization', `Bearer ${tokenUsuarioA}`);
 
-    // Verifica o status de sucesso esperado para exclusão.
+    // Deve retornar sucesso.
     expect(respostaExclusao.status).to.equal(fixtureResposta.sucesso.statusEsperado);
 
-    // Verifica que a conta foi removida:
-    // após a exclusão, o login com as credenciais do usuário A deve falhar.
+    // Depois da exclusão, esse usuário não consegue mais fazer login.
     const respostaLoginAposExclusao = await request(app)
       .post('/api/auth/login')
-      .send(fixtureRequisicao.loginUsuarioAValido);
+      .send(loginUsuarioAValido);
 
     expect(respostaLoginAposExclusao.status).to.equal(fixtureResposta.loginAposExclusao.statusEsperado);
     expect(respostaLoginAposExclusao.body).to.deep.equal({
@@ -94,7 +110,7 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
       }
     });
 
-    // Verifica que o token antigo do usuário excluído deixou de ser aceito.
+    // O token antigo também deixa de funcionar.
     const respostaTokenAposExclusao = await request(app)
       .get('/api/recipes/my')
       .set('Authorization', `Bearer ${tokenUsuarioA}`);
@@ -107,8 +123,7 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
       }
     });
 
-    // Verifica que a receita associada foi removida:
-    // após a exclusão do usuário, a receita não deve mais ser encontrada.
+    // A receita desse usuário também deve sumir.
     const respostaBuscaReceitaExcluida = await request(app)
       .get(`/api/recipes/${receitaCriadaId}`);
 
@@ -121,14 +136,12 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
     });
   });
 
-  // CT-17, CT-18 e CT-19: Cenários negativos da exclusão de conta.
-  // Data-Driven Testing é usado para agrupar casos com a mesma lógica base
-  // (montar requisição DELETE e validar status/corpo), mudando apenas token e id alvo.
+  // CT-17, CT-18 e CT-19: cenários de erro.
   const casosErroExclusao = [
     {
       idCaso: 'CT-17',
       descricao: 'ao tentar excluir a conta de outro usuario',
-      // No CT-17, o usuário A tenta excluir o usuário B e deve receber 403.
+      // Usuário A tentando excluir usuário B.
       obterIdAlvo: ({ usuarioB }) => usuarioB,
       montarHeaderAutorizacao: ({ tokenA }) => `Bearer ${tokenA}`,
       respostaEsperada: fixtureResposta.excluirOutroUsuario
@@ -136,7 +149,7 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
     {
       idCaso: 'CT-18',
       descricao: 'ao informar um id inexistente',
-      // No CT-18, usamos um id que nao existe para validar retorno 404.
+      // ID que não existe.
       obterIdAlvo: () => fixtureRequisicao.idInexistente,
       montarHeaderAutorizacao: ({ tokenA }) => `Bearer ${tokenA}`,
       respostaEsperada: fixtureResposta.usuarioNaoEncontrado
@@ -144,7 +157,7 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
     {
       idCaso: 'CT-19',
       descricao: 'ao chamar o endpoint sem token no header',
-      // No CT-19, não enviamos o header Authorization para validar autenticação obrigatória.
+      // Sem token.
       obterIdAlvo: ({ usuarioA }) => usuarioA,
       montarHeaderAutorizacao: () => null,
       respostaEsperada: fixtureResposta.tokenObrigatorio
@@ -153,16 +166,16 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
 
   casosErroExclusao.forEach(({ idCaso, descricao, obterIdAlvo, montarHeaderAutorizacao, respostaEsperada }) => {
     it(`${idCaso}: deve retornar erro ${descricao}`, async () => {
-      // Define o id de usuário alvo do cenário atual.
+      // Escolhe o ID do cenário.
       const idAlvo = obterIdAlvo({
         usuarioA: usuarioAId,
         usuarioB: usuarioBId
       });
 
-      // Monta a requisição base de exclusão para o usuário alvo.
+      // Monta a chamada de exclusão.
       let requisicao = request(app).delete(`/api/users/${idAlvo}`);
 
-      // Aplica o header de autorização apenas quando o caso exige token.
+      // Só envia token quando o caso pede.
       const headerAutorizacao = montarHeaderAutorizacao({
         tokenA: tokenUsuarioA,
         tokenB: tokenUsuarioB
@@ -172,13 +185,13 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
         requisicao = requisicao.set('Authorization', headerAutorizacao);
       }
 
-      // Executa a requisição do cenário atual.
+      // Executa a chamada.
       const response = await requisicao;
 
-      // Valida o status HTTP esperado para o caso.
+      // Confirma o status esperado.
       expect(response.status).to.equal(respostaEsperada.statusEsperado);
 
-      // Valida o corpo de erro padronizado retornado pela API.
+      // Confirma o erro padronizado.
       expect(response.body).to.deep.equal({
         error: {
           code: respostaEsperada.codigoErroEsperado,
@@ -186,12 +199,11 @@ describe('US-04 - Exclusao de conta (DELETE /api/users/:id)', () => {
         }
       });
 
-      // Validação adicional do CT-17:
-      // confirma que o usuário B continua existindo porque a exclusão indevida foi bloqueada.
+      // No CT-17, confirma que o usuário B continua ativo.
       if (idCaso === 'CT-17') {
         const loginUsuarioBPosTentativa = await request(app)
           .post('/api/auth/login')
-          .send(fixtureRequisicao.loginUsuarioBValido);
+          .send(loginUsuarioBValido);
 
         expect(loginUsuarioBPosTentativa.status).to.equal(200);
       }

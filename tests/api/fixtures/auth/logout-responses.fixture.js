@@ -1,5 +1,5 @@
-// Este arquivo contém os resultados esperados da API para os cenários da US-03 (Logout de usuário).
-// Cada bloco representa um comportamento esperado para um status HTTP específico.
+// Fixture de saída da US-03.
+// Aqui ficam os resultados esperados para cada cenário de logout.
 
 module.exports = {
 

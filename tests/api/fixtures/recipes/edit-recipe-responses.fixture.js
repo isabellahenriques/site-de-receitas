@@ -1,5 +1,5 @@
-// Este arquivo contém os resultados esperados da API para os cenários da US-06 (Edição de receita).
-// Cada bloco representa o comportamento esperado para um status HTTP em linguagem simples.
+// Fixture de saída da US-06.
+// Aqui ficam os resultados esperados dos cenários de edição.
 
 module.exports = {
 

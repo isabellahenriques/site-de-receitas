@@ -1,23 +1,23 @@
-// Bibliotecas de teste:
-// - supertest: permite enviar requisicoes HTTP para a aplicacao sem cliente externo.
-// - chai: fornece assercoes para validar status, payload e regras de negocio.
+// Ferramentas do teste:
+// - supertest: chama a API.
+// - chai: verifica o resultado.
 const request = require('supertest');
 const { expect } = require('chai');
 
-// Importa a app Express para executar os testes de API de forma integrada.
+// API que será testada.
 const app = require('../../../../src/app');
 
-// Importa resets dos bancos em memoria para isolar cenarios e evitar efeito cascata.
+// Limpa dados antes de cada cenário.
 const { resetUsers } = require('../../../../src/models/userModel');
 const { resetRecipes } = require('../../../../src/models/recipeModel');
 
-// Importa massa de dados de entrada da US-07.
+// Dados de entrada dos testes.
 const fixtureRequisicao = require('../../fixtures/recipes/delete-recipe-requests.fixture');
 
-// Importa resultados esperados (status/corpo de resposta) da US-07.
+// Resultados esperados em cada caso.
 const fixtureResposta = require('../../fixtures/recipes/delete-recipe-responses.fixture');
 
-// Agrupa os cenarios da US-07 — Exclusao de receita.
+// Testes da US-07 (exclusão de receita).
 describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
   let usuarioAId;
   let usuarioBId;
@@ -26,18 +26,12 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
   let receitaUsuarioAId;
   let receitaUsuarioBId;
 
-  // beforeEach:
-  // 1. Limpa usuarios e receitas em memoria.
-  // 2. Cria usuario A e usuario B.
-  // 3. Realiza login de ambos para obter tokens.
-  // 4. Cria uma receita para cada usuario.
-  // Esse setup deixa os cenarios deterministicos para validar autorizacao e inexistencia.
+  // Preparo: cria usuários, faz login e cria receitas.
   beforeEach(async () => {
     resetUsers();
     resetRecipes();
 
-    // Cria um usuario tecnico descartavel para deslocar o proximo ID de usuario.
-    // Isso evita colisoes de token com cenarios de logout que podem invalidar tokens de sub=1.
+    // Usuário técnico para evitar conflito com outros cenários da suíte.
     await request(app)
       .post('/api/users')
       .send({
@@ -46,7 +40,7 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
         password: '12345678'
       });
 
-    // Gera e-mails unicos por execucao para evitar colisao com outros cenarios da suite.
+    // E-mails únicos evitam mistura entre testes.
     const sufixoUnico = Date.now();
     const usuarioAComEmailUnico = {
       ...fixtureRequisicao.usuarioAValido,
@@ -98,8 +92,7 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
     receitaUsuarioBId = respostaCriacaoReceitaUsuarioB.body.id;
   });
 
-  // CT-30: Cenário positivo de exclusao.
-  // Mantemos Data-Driven mesmo com um caso para facilitar evolucao sem alterar a estrutura.
+  // CT-30: exclusão com sucesso.
   const casosSucessoExclusao = [
     {
       idCaso: 'CT-30',
@@ -112,21 +105,21 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
 
   casosSucessoExclusao.forEach(({ idCaso, descricao, obterIdReceitaAlvo, token, respostaEsperada }) => {
     it(`${idCaso}: deve excluir receita com sucesso ${descricao}`, async () => {
-      // Resolve o ID da receita alvo com base no contexto do cenario.
+      // Escolhe a receita do cenário.
       const idReceitaAlvo = obterIdReceitaAlvo({
         idReceitaA: receitaUsuarioAId,
         idReceitaB: receitaUsuarioBId
       });
 
-      // Realiza requisicao DELETE autenticada para excluir a receita alvo.
+      // Faz a exclusão.
       const respostaExclusao = await request(app)
         .delete(`/api/recipes/${idReceitaAlvo}`)
         .set('Authorization', `Bearer ${token({ tokenA: tokenUsuarioA, tokenB: tokenUsuarioB })}`);
 
-      // Valida status de sucesso aceito pelo cenario (200 ou 204).
+      // Deve retornar status de sucesso.
       expect(respostaEsperada.statusAceitos).to.include(respostaExclusao.status);
 
-      // Verificacao de regra de negocio: receita nao deve mais existir apos exclusao.
+      // Depois da exclusão, a receita não pode mais existir.
       const respostaConsultaAposExclusao = await request(app).get(`/api/recipes/${idReceitaAlvo}`);
       expect(respostaConsultaAposExclusao.status).to.equal(fixtureResposta.receitaNaoAcessivelAposExclusao.statusEsperado);
       expect(respostaConsultaAposExclusao.body).to.deep.equal({
@@ -138,8 +131,7 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
     });
   });
 
-  // CT-31, CT-32 e CT-33: Cenarios negativos.
-  // Data-Driven aplicado para reaproveitar a mesma estrutura de requisicao e assercao.
+  // CT-31, CT-32 e CT-33: cenários de erro.
   const casosErroExclusao = [
     {
       idCaso: 'CT-31',
@@ -166,16 +158,16 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
 
   casosErroExclusao.forEach(({ idCaso, descricao, obterIdReceitaAlvo, montarHeaderAutorizacao, respostaEsperada }) => {
     it(`${idCaso}: deve retornar erro ${descricao}`, async () => {
-      // Resolve o ID de receita alvo do cenario atual.
+      // Escolhe a receita alvo.
       const idReceitaAlvo = obterIdReceitaAlvo({
         idReceitaA: receitaUsuarioAId,
         idReceitaB: receitaUsuarioBId
       });
 
-      // Monta requisicao base de exclusao.
+      // Chamada base de exclusão.
       let requisicao = request(app).delete(`/api/recipes/${idReceitaAlvo}`);
 
-      // Aplica header Authorization somente quando o cenario exige token.
+      // Só envia token quando o cenário pede.
       const headerAutorizacao = montarHeaderAutorizacao({
         tokenA: tokenUsuarioA,
         tokenB: tokenUsuarioB
@@ -184,13 +176,13 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
         requisicao = requisicao.set('Authorization', headerAutorizacao);
       }
 
-      // Executa o cenario e captura resposta.
+      // Executa a chamada.
       const response = await requisicao;
 
-      // Valida status HTTP esperado.
+      // Confirma o status esperado.
       expect(response.status).to.equal(respostaEsperada.statusEsperado);
 
-      // Valida padrao de erro da API com codigo e mensagem esperados.
+      // Confirma o erro padronizado.
       expect(response.body).to.deep.equal({
         error: {
           code: respostaEsperada.codigoErroEsperado,
@@ -198,8 +190,7 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
         }
       });
 
-      // Validacao extra do CT-31:
-      // garante que a receita do usuario B continua existente apos tentativa indevida do usuario A.
+      // No CT-31, confirma que a receita do usuário B continua existindo.
       if (idCaso === 'CT-31') {
         const respostaConsultaReceitaB = await request(app)
           .get(`/api/recipes/${receitaUsuarioBId}`)
@@ -211,17 +202,16 @@ describe('US-07 - Exclusao de receita (DELETE /api/recipes/:id)', () => {
     });
   });
 
-  // CT-34: Regra pos-condicao da exclusao.
-  // Cenario separado para deixar explicita a validacao de inacessibilidade via GET apos DELETE.
+  // CT-34: após excluir, consultar deve retornar 404.
   it('CT-34: deve retornar 404 ao consultar receita excluida', async () => {
-    // Exclui uma receita valida do proprio usuario autenticado.
+    // Exclui uma receita válida.
     const respostaExclusao = await request(app)
       .delete(`/api/recipes/${receitaUsuarioAId}`)
       .set('Authorization', `Bearer ${tokenUsuarioA}`);
 
     expect(fixtureResposta.sucesso.statusAceitos).to.include(respostaExclusao.status);
 
-    // Consulta a mesma receita apos exclusao para comprovar que nao esta mais acessivel.
+    // Consulta a mesma receita para confirmar que sumiu.
     const respostaConsultaAposExclusao = await request(app).get(`/api/recipes/${receitaUsuarioAId}`);
 
     expect(respostaConsultaAposExclusao.status).to.equal(fixtureResposta.receitaNaoAcessivelAposExclusao.statusEsperado);

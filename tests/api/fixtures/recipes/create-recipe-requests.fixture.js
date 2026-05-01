@@ -1,7 +1,5 @@
-// Este arquivo contém os dados que serão enviados no corpo das requisições
-// dos testes da US-05 (Cadastro de receita).
-// Centralizar os dados aqui facilita manutenção: se algo mudar,
-// basta atualizar este arquivo e os testes continuam organizados.
+// Fixture de entrada da US-05.
+// Aqui ficam os dados enviados nos testes de cadastro de receita.
 
 module.exports = {
 
