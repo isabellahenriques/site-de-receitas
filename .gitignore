@@ -4,13 +4,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-.env
-.env.*
-!.env.example
-
-coverage/
-dist/
-build/
+# Arquivos de relatorio de testes (mochawesome)
 tests/reports/
 tests/reports/mochawesome/
 tests/reports/mochawesome/**
@@ -23,6 +17,14 @@ mochawesome-report/assets/
 mochawesome.json
 mochawesome*.html
 mochawesome*.json
+
+.env
+.env.*
+!.env.example
+
+coverage/
+dist/
+build/
 
 .DS_Store
 Thumbs.db
