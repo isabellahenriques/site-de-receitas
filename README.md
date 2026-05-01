@@ -55,7 +55,7 @@ Os testes de API foram implementados em JavaScript com:
 - `tests/api/modules/recipes`: cenários automatizados do módulo de receitas
 - `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
 - `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
-- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05, US-06, US-07, US-08 e US-09
+- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05, US-06, US-07, US-08, US-09 e US-10
 - `tests/reports/mochawesome`: saída dos relatórios de execução
 
 ### Executar testes
@@ -194,6 +194,19 @@ Casos implementados:
 - CT-39: listagem de receitas públicas com sucesso retornando somente itens públicos
 - CT-40: listagem sem receitas públicas cadastradas retorna lista vazia
 - CT-41: listagem de receitas públicas sem autenticação retorna sucesso e apenas receitas públicas
+
+### Cobertura da US-10 (Busca de receitas por nome)
+
+Endpoint:
+
+- `GET /api/recipes?search=termo`
+
+Casos implementados:
+
+- CT-42: busca de receita com termo válido retorna 200 e contém `Bolo de cenoura`
+- CT-43: busca case insensitive com termo em maiúsculo retorna 200 e contém `Bolo de cenoura`
+- CT-44: busca com termo inexistente retorna 200 com lista vazia
+- CT-45: busca por termo de receita privada retorna 200 sem expor receita privada
 
 ## Testes de Performance
 
