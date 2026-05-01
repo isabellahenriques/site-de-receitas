@@ -13,6 +13,7 @@ dist/
 build/
 tests/reports/
 tests/reports/mochawesome/
+tests/reports/mochawesome/**
 mochawesome-report/
 mochawesome.json
 mochawesome*.html

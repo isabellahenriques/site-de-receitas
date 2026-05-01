@@ -52,8 +52,10 @@ Os testes de API foram implementados em JavaScript com:
 
 - `tests/api/modules/users`: cenários automatizados do módulo de usuários
 - `tests/api/modules/auth`: cenários automatizados do módulo de autenticação
+- `tests/api/modules/recipes`: cenários automatizados do módulo de receitas
 - `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
 - `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
+- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05
 - `tests/reports/mochawesome`: saída dos relatórios de execução
 
 ### Executar testes
@@ -119,6 +121,18 @@ Casos implementados:
 - CT-17: tentativa de excluir conta de outro usuário
 - CT-18: tentativa de excluir conta com id inexistente
 - CT-19: tentativa de excluir conta sem token no header `Authorization`
+
+### Cobertura da US-05 (Cadastro de receita)
+
+Endpoint: `POST /api/recipes`
+
+Casos implementados:
+
+- CT-20: cadastro de receita com sucesso
+- CT-21: cadastro de receita com visibilidade privada
+- CT-22: cadastro de receita sem token
+- CT-23: cadastro de receita sem o campo `title`
+- CT-24: cadastro de receita com visibilidade inválida
 
 ## Testes de Performance
 
