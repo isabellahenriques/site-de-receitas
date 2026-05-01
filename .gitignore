@@ -12,6 +12,8 @@ coverage/
 dist/
 build/
 tests/reports/
+mochawesome-report/
+mochawesome.json
 
 .DS_Store
 Thumbs.db

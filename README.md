@@ -50,8 +50,10 @@ Os testes de API foram implementados em JavaScript com:
 
 ### Estrutura de testes
 
-- `tests/modules/users`: cenários automatizados por módulo da API
-- `tests/fixtures/users`: massa de dados (request/response) para data-driven testing
+- `tests/api/modules/users`: cenários automatizados do módulo de usuários
+- `tests/api/modules/auth`: cenários automatizados do módulo de autenticação
+- `tests/api/fixtures/users`: massa de dados (request/response) da US-01
+- `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
 - `tests/reports/mochawesome`: saída dos relatórios de execução
 
 ### Executar testes
@@ -84,6 +86,28 @@ Casos implementados:
 - CT-05: cadastro sem `password`
 - CT-06: cadastro com senha menor que 8 caracteres
 - CT-07: cadastro com body vazio
+
+### Cobertura da US-02 (Login de usuário)
+
+Endpoint: `POST /api/auth/login`
+
+Casos implementados:
+
+- CT-08: login com sucesso com credenciais válidas
+- CT-09: login com e-mail não cadastrado
+- CT-10: login com senha incorreta
+- CT-11: login sem `email`
+- CT-12: login sem `password`
+
+### Cobertura da US-03 (Logout de usuário)
+
+Endpoint: `POST /api/auth/logout`
+
+Casos implementados:
+
+- CT-13: logout com sucesso com token válido
+- CT-14: logout sem token no header `Authorization`
+- CT-15: logout com token já invalidado por logout anterior
 
 ## Testes de Performance
 
