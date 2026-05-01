@@ -15,6 +15,7 @@ tests/reports/
 tests/reports/mochawesome/
 tests/reports/mochawesome/**
 mochawesome-report/
+mochawesome-report/assets/
 mochawesome.json
 mochawesome*.html
 mochawesome*.json

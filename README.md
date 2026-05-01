@@ -55,7 +55,7 @@ Os testes de API foram implementados em JavaScript com:
 - `tests/api/modules/recipes`: cenários automatizados do módulo de receitas
 - `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
 - `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
-- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05
+- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05 e US-06
 - `tests/reports/mochawesome`: saída dos relatórios de execução
 
 ### Executar testes
@@ -133,6 +133,18 @@ Casos implementados:
 - CT-22: cadastro de receita sem token
 - CT-23: cadastro de receita sem o campo `title`
 - CT-24: cadastro de receita com visibilidade inválida
+
+### Cobertura da US-06 (Edição de receita)
+
+Endpoint: `PUT /api/recipes/:id`
+
+Casos implementados:
+
+- CT-25: edição de receita com sucesso
+- CT-26: tentativa de edição de receita de outro usuário
+- CT-27: tentativa de edição com id de receita inexistente
+- CT-28: tentativa de edição sem token no header `Authorization`
+- CT-29: tentativa de edição sem o campo obrigatório `title`
 
 ## Testes de Performance
 
