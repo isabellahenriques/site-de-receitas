@@ -4,6 +4,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Arquivos de relatorio de testes
+tests/reports/
+mochawesome-report/
+mochawesome*.html
+mochawesome*.json
+
 .env
 .env.*
 !.env.example
@@ -11,7 +17,6 @@ pnpm-debug.log*
 coverage/
 dist/
 build/
-tests/reports/
 
 .DS_Store
 Thumbs.db

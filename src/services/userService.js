@@ -36,14 +36,14 @@ async function registerUser({ name, email, password }) {
 }
 
 function removeUser({ authenticatedUserId, userIdToDelete }) {
-  if (String(authenticatedUserId) !== String(userIdToDelete)) {
-    throw new AppError(403, 'FORBIDDEN', 'Você só pode excluir a própria conta.');
-  }
-
   const user = findUserById(userIdToDelete);
 
   if (!user) {
     throw new AppError(404, 'NOT_FOUND', 'Usuário não encontrado.');
+  }
+
+  if (String(authenticatedUserId) !== String(userIdToDelete)) {
+    throw new AppError(403, 'FORBIDDEN', 'Você só pode excluir a própria conta.');
   }
 
   deleteRecipesByUserId(userIdToDelete);

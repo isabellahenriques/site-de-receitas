@@ -29,35 +29,17 @@ npm run start
 
 Servidor padrão: `http://localhost:3000`
 
-## Rodando os testes
-
-### Testes de API (Mocha)
-
-Com `npm install` já executado:
-
-```bash
-npm test                # terminal, reporter spec
-npm run test:no-report  # mesmo comportamento (alias explícito)
-npm run test:report     # relatório HTML/JSON em tests/reports/mochawesome/
-```
-
-Os specs ficam em `tests/**/*.spec.js` (configuração em `package.json`).
-
-### Testes de performance (k6)
-
-Instale o [k6](#instalação-do-k6), suba a API (`npm run start`) e use os comandos em **[Testes de Performance](#testes-de-performance)** (secções por recurso, URL alternativa e `k6 run` direto).
-
 ## Branches
 
 | Branch | Descrição |
 |--------|-----------|
 | `main` | Código da API em produção |
-| `testesDeApi` | Testes automatizados |
+| `testesDeApi` | Testes automatizados e de performance |
 | `testesDePerformance` | Testes de performance |
 
 ## Testes automatizados
 
-**Nota:** Os testes de API estão disponíveis na branch `testesDeApi`.
+**Nota:** Nesta branch, a estrutura de testes disponível no repositório é a de API em `tests/api`.
 
 Os testes de API foram implementados em JavaScript com:
 
@@ -68,9 +50,13 @@ Os testes de API foram implementados em JavaScript com:
 
 ### Estrutura de testes
 
-- `tests/modules/users`: cenários automatizados por módulo da API
-- `tests/fixtures/users`: massa de dados (request/response) para data-driven testing
-- `tests/reports/mochawesome`: saída dos relatórios de execução
+- `tests/api/modules/users`: cenários automatizados do módulo de usuários
+- `tests/api/modules/auth`: cenários automatizados do módulo de autenticação
+- `tests/api/modules/recipes`: cenários automatizados do módulo de receitas
+- `tests/api/fixtures/users`: massa de dados (request/response) da US-01 e US-04
+- `tests/api/fixtures/auth`: massa de dados (request/response) da US-02 e US-03
+- `tests/api/fixtures/recipes`: massa de dados (request/response) da US-05, US-06, US-07, US-08, US-09, US-10 e US-11
+- `tests/reports`: saída dos relatórios de execução
 
 ### Executar testes
 
@@ -91,6 +77,16 @@ npm run test:no-report
 npm run test:report
 ```
 
+```bash
+# Execução apenas da suíte de API sem relatório
+npm run test:api:no-report
+```
+
+```bash
+# Execução apenas da suíte de API com relatório mochawesome
+npm run test:api:report
+```
+
 ### Cobertura da US-01 (Cadastro de usuário)
 
 Endpoint: `POST /api/users`
@@ -105,41 +101,157 @@ Casos implementados:
 - CT-06: cadastro com senha menor que 8 caracteres
 - CT-07: cadastro com body vazio
 
+### Cobertura da US-02 (Login de usuário)
+
+Endpoint: `POST /api/auth/login`
+
+Casos implementados:
+
+- CT-08: login com sucesso com credenciais válidas
+- CT-09: login com e-mail não cadastrado
+- CT-10: login com senha incorreta
+- CT-11: login sem `email`
+- CT-12: login sem `password`
+
+### Cobertura da US-03 (Logout de usuário)
+
+Endpoint: `POST /api/auth/logout`
+
+Casos implementados:
+
+- CT-13: logout com sucesso com token válido
+- CT-14: logout sem token no header `Authorization`
+- CT-15: logout com token já invalidado por logout anterior
+
+### Cobertura da US-04 (Exclusão de conta)
+
+Endpoint: `DELETE /api/users/:id`
+
+Casos implementados:
+
+- CT-16: exclusão da própria conta com sucesso
+- CT-17: tentativa de excluir conta de outro usuário
+- CT-18: tentativa de excluir conta com id inexistente
+- CT-19: tentativa de excluir conta sem token no header `Authorization`
+
+### Cobertura da US-05 (Cadastro de receita)
+
+Endpoint: `POST /api/recipes`
+
+Casos implementados:
+
+- CT-20: cadastro de receita com sucesso
+- CT-21: cadastro de receita com visibilidade privada
+- CT-22: cadastro de receita sem token
+- CT-23: cadastro de receita sem o campo `title`
+- CT-24: cadastro de receita com visibilidade inválida
+
+### Cobertura da US-06 (Edição de receita)
+
+Endpoint: `PUT /api/recipes/:id`
+
+Casos implementados:
+
+- CT-25: edição de receita com sucesso
+- CT-26: tentativa de edição de receita de outro usuário
+- CT-27: tentativa de edição com id de receita inexistente
+- CT-28: tentativa de edição sem token no header `Authorization`
+- CT-29: tentativa de edição sem o campo obrigatório `title`
+
+### Cobertura da US-07 (Exclusão de receita)
+
+Endpoint: `DELETE /api/recipes/:id`
+
+Casos implementados:
+
+- CT-30: exclusão de receita própria com sucesso
+- CT-31: tentativa de exclusão de receita de outro usuário
+- CT-32: tentativa de exclusão com id de receita inexistente
+- CT-33: tentativa de exclusão sem token no header `Authorization`
+- CT-34: validação de que receita excluída não é mais acessível via `GET /api/recipes/:id`
+
+### Cobertura da US-08 (Controle de visibilidade da receita)
+
+Endpoints:
+
+- `GET /api/recipes`
+- `GET /api/recipes/:id`
+- `GET /api/recipes/my`
+
+Casos implementados:
+
+- CT-35: receita privada não aparece na listagem pública
+- CT-36: acesso negado para usuário autenticado que não é dono da receita privada
+- CT-37: acesso negado para visitante não autenticado em receita privada
+- CT-38: listagem de receitas do próprio usuário retorna receitas públicas e privadas
+
+### Cobertura da US-09 (Listagem de receitas públicas)
+
+Endpoint:
+
+- `GET /api/recipes`
+
+Casos implementados:
+
+- CT-39: listagem de receitas públicas com sucesso retornando somente itens públicos
+- CT-40: listagem sem receitas públicas cadastradas retorna lista vazia
+- CT-41: listagem de receitas públicas sem autenticação retorna sucesso e apenas receitas públicas
+
+### Cobertura da US-10 (Busca de receitas por nome)
+
+Endpoint:
+
+- `GET /api/recipes?search=termo`
+
+Casos implementados:
+
+- CT-42: busca de receita com termo válido retorna 200 e contém `Bolo de cenoura`
+- CT-43: busca case insensitive com termo em maiúsculo retorna 200 e contém `Bolo de cenoura`
+- CT-44: busca com termo inexistente retorna 200 com lista vazia
+- CT-45: busca por termo de receita privada retorna 200 sem expor receita privada
+
+### Cobertura da US-11 (Visualização de receita pública)
+
+Endpoint:
+
+- `GET /api/recipes/:id`
+
+Casos implementados:
+
+- CT-46: visualização de receita pública com sucesso retornando detalhes completos da receita
+- CT-47: visualização com id inexistente retorna 404 com mensagem de receita não encontrada
+- CT-48: visualização de receita pública sem autenticação retorna 200 com detalhes completos
+- CT-49: visualização de receita privada pelo próprio dono retorna 200 com detalhes completos
+
 ## Testes de Performance
 
-**Nota:** Os testes de performance estão disponíveis na branch `testesDePerformance`.
+**Nota:** Os testes de performance estão disponíveis na branch `testesDePerformance` e podem não estar presentes no diretório `tests` desta branch.
 
-Os testes usam [k6](https://k6.io/) (JavaScript) e estão separados por recurso (`resources/swagger.json`):
+Os testes de performance foram implementados com K6 para avaliar a robustez da API sob diferentes cargas.
 
-- **`tests/performance/users/`** — apenas **`POST /api/users`** (cadastro). Métricas filtradas pela tag **`UsersRegister`**.
-- **`tests/performance/auth/`** — **`POST /api/auth/login`** e **`POST /api/auth/logout`**. Por iteração há um cadastro prévio (`POST /api/users`) só como *setup* para credenciais válidas; os SLAs aplicam-se às tags **`Login`** e **`Logout`**.
-- **`tests/performance/receitas/`** — fluxo completo das rotas de receitas: **`POST /api/recipes`**, **`GET /api/recipes`**, **`GET /api/recipes/my`**, **`GET /api/recipes/:id`**, **`PUT /api/recipes/:id`**, **`DELETE /api/recipes/:id`**. Cadastro + login por iteração usam tags **`RecipesSetupRegister`** / **`RecipesSetupLogin`**; os SLAs aplicam-se à tag **`RecipesHTTP`**. Scripts npm: **`perf:load`**, **`perf:stress`**, **`perf:spike`** (saída JSON em `tests/performance/reports/receitas-*-report.json`).
+### Instalação do K6
 
-### Instalação do k6
+Para executar os testes de performance, é necessário instalar o K6. Siga as instruções abaixo:
 
-Instale o binário `k6` no sistema (não é pacote npm do projeto).
-
-#### Windows (Chocolatey ou winget)
+#### Windows (usando Chocolatey ou winget)
 
 ```bash
+# Com Chocolatey
 choco install k6
+
+# Ou com winget
+winget install k6
 ```
+
+#### Linux
 
 ```bash
-winget install k6 --source winget
+# Ubuntu/Debian
+sudo apt update
+sudo apt install k6
+
+# Outras distribuições: consulte https://k6.io/docs/get-started/installation/
 ```
-
-#### Linux (Ubuntu/Debian)
-
-```bash
-sudo gpg -k
-sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-sudo apt-get update
-sudo apt-get install k6
-```
-
-Outras distribuições: [documentação oficial de instalação](https://grafana.com/docs/k6/latest/set-up/install-k6/).
 
 #### macOS
 
@@ -147,7 +259,7 @@ Outras distribuições: [documentação oficial de instalação](https://grafana
 brew install k6
 ```
 
-Confirme a instalação:
+Verifique a instalação:
 
 ```bash
 k6 version
@@ -155,112 +267,43 @@ k6 version
 
 ### Estrutura de testes de performance
 
-- `tests/performance/users/` — recurso **Usuários**
-  - `common.js`: fixture, URL base e **`POST /api/users`** (tag `UsersRegister`)
-  - `load.test.js` / `stress.test.js` / `spike.test.js`: carga, estresse e pico só no cadastro (stress registra também `users_register_duration`)
-- `tests/performance/auth/` — recurso **Autenticação**
-  - `common.js`: setup com cadastro + **`POST /api/auth/login`** + **`POST /api/auth/logout`**
-  - `load.test.js` / `stress.test.js` / `spike.test.js`: mesmos padrões de VUs/duração; stress inclui `login_req_duration` e `logout_req_duration`
-- `tests/performance/receitas/` — recurso **Recipes**
-  - `common.js`: setup (`RecipesSetupRegister` / `RecipesSetupLogin`) + fluxo **`RecipesHTTP`** (`POST`/`GET`/`GET my`/`GET :id`/`PUT`/`DELETE`)
-  - `load.test.js` / `stress.test.js` / `spike.test.js`: carga, estresse (métricas `recipes_*_duration`) e pico; relatórios `receitas-*-report.json`
-- `tests/performance/fixtures/users.json`: `baseUrl`, lista `users` (`name`, `email`, `password`) e **`recipeTemplates`** (`title`, `ingredients`, `instructions`, `visibility`) — usada pelos pacotes users, auth e **receitas**
-- `tests/performance/reports/`: um JSON por execução (`--out json=...` nos scripts npm)
+- `tests/performance/users/`: testes específicos para o endpoint de usuários
+  - `load.test.js`: teste de carga
+  - `stress.test.js`: teste de estresse
+  - `spike.test.js`: teste de pico
+- `tests/performance/fixtures/users.json`: dados de exemplo para os testes
+- `tests/performance/reports/`: relatórios de execução em JSON
 
-### Cenários (espelhados em users, auth e receitas)
+### Cenários de teste
 
-1. **Carga**: ~50 VUs após ramp-up curta + platô de **1 minuto**.
-2. **Estresse**: cinco estágios de **24s**, alvos **40 → 200 VUs** (≈2 minutos). Em **receitas**, métricas `recipes_*_duration` registram latência por operação para análise junto ao relatório JSON.
-3. **Pico**: linha base → até **500 VUs** por **30s**.
+1. **Teste de Carga (Load Test)**: Simula 50 usuários simultâneos durante 1 minuto. Verifica se a API mantém tempo de resposta abaixo de 2 segundos e taxa de erro menor que 1%.
 
-### Como rodar os testes de performance
+2. **Teste de Estresse (Stress Test)**: Sobe gradualmente de 0 até 200 usuários em 2 minutos. Identifica o ponto de ruptura da API, registrando taxa de erro e tempo de resposta.
 
-Pré-requisitos: [k6 instalado](#instalação-do-k6), API em execução (`npm run start`). Por padrão a URL é `http://localhost:3000` (também configurável em `tests/performance/fixtures/users.json`).
+3. **Teste de Pico (Spike Test)**: Simula pico repentino de 500 usuários por 30 segundos. Verifica o comportamento da API sob carga extrema.
 
-### **Testes de performance — usuários (cadastro `POST /api/users`)**
+### Executar testes de performance
+
+Certifique-se de que a API está rodando em `http://localhost:3000` antes de executar os testes.
 
 ```bash
-npm run perf:users:load
-npm run perf:users:stress
-npm run perf:users:spike
-```
-
-Relatórios: `tests/performance/reports/users-*-report.json`.
-
----
-
-### **Testes de performance — autenticação (login / logout)**
-
-```bash
-npm run perf:auth:load
-npm run perf:auth:stress
-npm run perf:auth:spike
-```
-
-Relatórios: `tests/performance/reports/auth-*-report.json`.
-
----
-
-### **Testes de performance — receitas (fluxo CRUD)**
-
-```bash
+# Teste de carga
 npm run perf:load
+
+# Teste de estresse
 npm run perf:stress
+
+# Teste de pico
 npm run perf:spike
 ```
 
-Relatórios: `tests/performance/reports/receitas-*-report.json`.
-
----
-
-### **URL da API diferente de localhost**
-
-PowerShell (exemplo em uma linha — altere host, porta e o script `npm run` conforme o teste):
-
-```powershell
-$env:BASE_URL="http://outro-host:3000"; npm run perf:load
-```
-
-Outros shells:
-
-```bash
-set BASE_URL=http://outro-host:3000 && npm run perf:load
-```
-
-```bash
-export BASE_URL=http://outro-host:3000 && npm run perf:load
-```
-
----
-
-### **Rodar um script k6 direto (sem npm)**
-
-Equivalente aos scripts em `package.json`; ajuste o arquivo `.js` e o caminho do relatório JSON.
-
-```bash
-k6 run tests/performance/receitas/load.test.js --out json=tests/performance/reports/receitas-load-report.json
-```
-
-Substitua o caminho do `.js` e do relatório conforme o teste desejado (por exemplo: `tests/performance/users/load.test.js` → `users-load-report.json`, `tests/performance/auth/stress.test.js` → `auth-stress-report.json`).
+Os relatórios serão salvos em `tests/performance/reports/` no formato JSON.
 
 ### Thresholds (critérios de aceite)
 
-**Usuários**
-
-- `http_req_duration{name:UsersRegister}` / `http_req_failed{name:UsersRegister}` — p95 **< 2000 ms**, falhas **< 1%** em **`POST /api/users`**
-
-**Autenticação**
-
-- `http_req_duration{name:Login}` / `http_req_failed{name:Login}` — idem para **`POST /api/auth/login`**
-- `http_req_duration{name:Logout}` / `http_req_failed{name:Logout}` — idem para **`POST /api/auth/logout`**
-
-Em todos os pacotes: `http_reqs` com `rate>0` para garantir tráfego mensurável (total e req/s no JSON).
-
-Em **estresse** ou **pico**, falhas de threshold indicam limite do ambiente ou da API — útil para capacidade e tuning.
-
-**Receitas**
-
-- `http_req_duration{name:RecipesHTTP}` / `http_req_failed{name:RecipesHTTP}` — p95 **< 2000 ms**, falhas **< 1%** nas operações medidas do recurso Recipes (conforme `resources/swagger.json`).
+- `http_req_duration`: 95% das requisições abaixo de 2000ms
+- `http_req_failed`: taxa de falha menor que 1%
+- `http_reqs`: registro do total de requisições por segundo
 
 ## Documentação Swagger
 

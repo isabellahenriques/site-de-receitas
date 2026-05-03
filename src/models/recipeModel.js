@@ -67,6 +67,11 @@ function listRecipesByUserId(userId) {
   return recipes.filter((recipe) => recipe.userId === String(userId));
 }
 
+function resetRecipes() {
+  recipes.length = 0;
+  nextRecipeId = 1;
+}
+
 module.exports = {
   createRecipe,
   findRecipeById,
@@ -74,5 +79,6 @@ module.exports = {
   deleteRecipeById,
   deleteRecipesByUserId,
   listPublicRecipes,
-  listRecipesByUserId
+  listRecipesByUserId,
+  resetRecipes
 };
