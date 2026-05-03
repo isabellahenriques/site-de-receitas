@@ -60,6 +60,8 @@ Os testes de API foram implementados em JavaScript com:
 
 ### Executar testes
 
+Resumo dos comandos: secção [Rodando os testes](#rodando-os-testes).
+
 ```bash
 # Execução padrão (sem relatório HTML)
 npm test

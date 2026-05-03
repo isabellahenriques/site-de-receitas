@@ -25,3 +25,5 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+# Relatórios K6
+tests/performance/reports/

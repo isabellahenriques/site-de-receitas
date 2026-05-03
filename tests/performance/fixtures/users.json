@@ -1,0 +1,63 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "description": "Massa para testes K6 (Swagger: resources/swagger.json). Campo users: cadastro/login. Campo recipeTemplates: payloads para POST/PUT em tests/performance/receitas.",
+  "users": [
+    {
+      "name": "João Silva",
+      "email": "joao.silva@example.com",
+      "password": "password123"
+    },
+    {
+      "name": "Maria Oliveira",
+      "email": "maria.oliveira@example.com",
+      "password": "password123"
+    },
+    {
+      "name": "Pedro Santos",
+      "email": "pedro.santos@example.com",
+      "password": "password123"
+    },
+    {
+      "name": "Ana Costa",
+      "email": "ana.costa@example.com",
+      "password": "password123"
+    },
+    {
+      "name": "Carlos Pereira",
+      "email": "carlos.pereira@example.com",
+      "password": "password123"
+    }
+  ],
+  "recipeTemplates": [
+    {
+      "title": "Bolo de Cenoura",
+      "ingredients": "3 cenouras médias, 3 ovos, 2 xícaras de açúcar, 2 xícaras de farinha, 1 copo de óleo",
+      "instructions": "Bata no liquidificador cenouras, ovos e óleo. Misture com farinha e açúcar. Asse em forno médio por 40 minutos.",
+      "visibility": "public"
+    },
+    {
+      "title": "Salada Caesar",
+      "ingredients": "Alface romana, croutons, parmesão, molho caesar",
+      "instructions": "Lave a alface, misture com molho, finalize com parmesão e croutons.",
+      "visibility": "public"
+    },
+    {
+      "title": "Risoto de Cogumelos",
+      "ingredients": "Arroz arbório, cogumelos, caldo de legumes, cebola, vinho branco",
+      "instructions": "Refogue cebola e cogumelos, adicione arroz e caldo aos poucos até o ponto al dente.",
+      "visibility": "private"
+    },
+    {
+      "title": "Tapioca Recheada",
+      "ingredients": "Goma de tapioca, queijo coalho, tomate",
+      "instructions": "Hidrate a goma, faça na frigideira e recheie a gosto.",
+      "visibility": "public"
+    },
+    {
+      "title": "Suco Detox",
+      "ingredients": "Couve, limão, gengibre, água de coco",
+      "instructions": "Bata todos os ingredientes e coe se desejar.",
+      "visibility": "private"
+    }
+  ]
+}

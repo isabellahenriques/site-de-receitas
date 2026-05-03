@@ -10,7 +10,16 @@
         "test:report": "npm run test:api:report",
         "test:no-report": "npm run test:api:no-report",
         "start": "node src/server.js",
-        "dev": "node src/server.js"
+        "dev": "node src/server.js",
+        "perf:users:load": "k6 run tests/performance/users/load.test.js --out json=tests/performance/reports/users-load-report.json",
+        "perf:users:stress": "k6 run tests/performance/users/stress.test.js --out json=tests/performance/reports/users-stress-report.json",
+        "perf:users:spike": "k6 run tests/performance/users/spike.test.js --out json=tests/performance/reports/users-spike-report.json",
+        "perf:auth:load": "k6 run tests/performance/auth/load.test.js --out json=tests/performance/reports/auth-load-report.json",
+        "perf:auth:stress": "k6 run tests/performance/auth/stress.test.js --out json=tests/performance/reports/auth-stress-report.json",
+        "perf:auth:spike": "k6 run tests/performance/auth/spike.test.js --out json=tests/performance/reports/auth-spike-report.json",
+        "perf:load": "k6 run tests/performance/receitas/load.test.js --out json=tests/performance/reports/receitas-load-report.json",
+        "perf:stress": "k6 run tests/performance/receitas/stress.test.js --out json=tests/performance/reports/receitas-stress-report.json",
+        "perf:spike": "k6 run tests/performance/receitas/spike.test.js --out json=tests/performance/reports/receitas-spike-report.json"
     },
     "repository": {
         "type": "git",
