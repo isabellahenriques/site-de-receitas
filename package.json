@@ -4,9 +4,20 @@
     "description": "Esse Ã© o projeto final da mentoria 2.0 do curso do JÃºlio de Lima - Turma 3",
     "main": "src/server.js",
     "scripts": {
-        "test": "echo Sem testes automatizados",
+        "test": "mocha \"tests/**/*.spec.js\" --reporter spec",
+        "test:report": "mocha \"tests/**/*.spec.js\" --reporter mochawesome --reporter-options reportDir=tests/reports/mochawesome,reportFilename=report,quiet=true,overwrite=true,html=true,json=true",
+        "test:no-report": "mocha \"tests/**/*.spec.js\" --reporter spec",
         "start": "node src/server.js",
-        "dev": "node src/server.js"
+        "dev": "node src/server.js",
+        "perf:users:load": "k6 run tests/performance/users/load.test.js --out json=tests/performance/reports/users-load-report.json",
+        "perf:users:stress": "k6 run tests/performance/users/stress.test.js --out json=tests/performance/reports/users-stress-report.json",
+        "perf:users:spike": "k6 run tests/performance/users/spike.test.js --out json=tests/performance/reports/users-spike-report.json",
+        "perf:auth:load": "k6 run tests/performance/auth/load.test.js --out json=tests/performance/reports/auth-load-report.json",
+        "perf:auth:stress": "k6 run tests/performance/auth/stress.test.js --out json=tests/performance/reports/auth-stress-report.json",
+        "perf:auth:spike": "k6 run tests/performance/auth/spike.test.js --out json=tests/performance/reports/auth-spike-report.json",
+        "perf:load": "k6 run tests/performance/receitas/load.test.js --out json=tests/performance/reports/receitas-load-report.json",
+        "perf:stress": "k6 run tests/performance/receitas/stress.test.js --out json=tests/performance/reports/receitas-stress-report.json",
+        "perf:spike": "k6 run tests/performance/receitas/spike.test.js --out json=tests/performance/reports/receitas-spike-report.json"
     },
     "repository": {
         "type": "git",
@@ -25,5 +36,11 @@
         "express": "^5.2.1",
         "jsonwebtoken": "^9.0.3",
         "swagger-ui-express": "^5.0.1"
+    },
+    "devDependencies": {
+        "chai": "^5.2.0",
+        "mocha": "^10.8.2",
+        "mochawesome": "^7.1.3",
+        "supertest": "^7.1.1"
     }
 }
