@@ -11,6 +11,7 @@ pnpm-debug.log*
 coverage/
 dist/
 build/
+tests/reports/
 
 .DS_Store
 Thumbs.db
@@ -19,3 +20,5 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+# Relatórios K6
+tests/performance/reports/
